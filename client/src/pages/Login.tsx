@@ -22,23 +22,33 @@ export default function Login() {
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ username, password })
       });
 
-      const data = await response.json();
+      if (!response.ok) {
+        const data = await response.json();
+        setLoginError(data.message || `Login failed (${response.status})`);
+        setIsLoading(false);
+        return;
+      }
 
-      if (response.ok) {
+      const data = await response.json();
+      
+      if (data.token) {
         localStorage.setItem('token', data.token);
-        window.location.href = '/';
+        // Small delay to ensure localStorage is written
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 100);
       } else {
-        setLoginError(data.message || 'Login failed');
+        setLoginError('No token received from server');
+        setIsLoading(false);
       }
     } catch (error) {
       console.error('Login error:', error);
-      setLoginError('Connection error. Please try again.');
-    } finally {
+      setLoginError(`Connection error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setIsLoading(false);
     }
   };
