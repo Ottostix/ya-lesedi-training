@@ -21,7 +21,8 @@ function Router({ isAuthenticated, currentUser, onLogout }: any) {
 
   return (
     <Switch>
-      <Route path={"/"} component={() => <Dashboard onLogout={onLogout} currentUser={currentUser} />} />
+      <Route path={"/dashboard"} component={Dashboard} />
+      <Route path={"/"} component={Dashboard} />
       <Route path={"/users"} component={() => <Users onLogout={onLogout} currentUser={currentUser} />} />
       <Route path={"/stores"} component={() => <Stores onLogout={onLogout} currentUser={currentUser} />} />
       <Route path={"/menus"} component={() => <Menus onLogout={onLogout} currentUser={currentUser} />} />
