@@ -78,8 +78,17 @@ export default function Dashboard() {
       {/* Header */}
       <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white py-12 px-6 md:px-12">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold mb-2">Dashboard</h1>
-          <p className="text-slate-300 text-lg">Welcome back to Ya Lesedi Training System</p>
+          <div className="flex items-center gap-6 mb-6">
+            <img 
+              src="/ya-lesedi-logo.jpg" 
+              alt="Ya Lesedi" 
+              className="w-20 h-20 object-contain drop-shadow-lg"
+            />
+            <div>
+              <h1 className="text-4xl md:text-5xl font-bold mb-2">Dashboard</h1>
+              <p className="text-slate-300 text-lg">Welcome back to Ya Lesedi Training System</p>
+            </div>
+          </div>
         </div>
       </div>
 

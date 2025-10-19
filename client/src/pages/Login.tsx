@@ -54,14 +54,12 @@ export default function Login() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-6">
-            <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary/70 rounded-2xl flex items-center justify-center shadow-2xl">
-              <img 
-                src="/1000541675.jpg" 
-                alt="Ya Lesedi Logo" 
-                className="w-16 h-16 rounded-xl object-cover"
-              />
-            </div>
+            <div className="flex justify-center mb-6">
+            <img 
+              src="/ya-lesedi-logo.jpg" 
+              alt="Ya Lesedi Restaurant Training System" 
+              className="w-32 h-32 object-contain drop-shadow-2xl"
+            />
           </div>
           <h1 className="text-4xl font-bold text-white mb-2">Ya Lesedi</h1>
           <p className="text-primary text-lg font-semibold mb-1">Restaurant Training System</p>
