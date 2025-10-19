@@ -1,278 +1,98 @@
 import { useState } from 'react';
-import { Trash2, Edit2, Plus, Search, MapPin, Users, Star } from 'lucide-react';
-import Navbar from '@/components/Navbar';
+import { Plus, MapPin, Users, Star, Edit2, Trash2 } from 'lucide-react';
 
 interface Store {
-  id: string;
+  id: number;
   name: string;
   location: string;
   manager: string;
   staff: number;
   rating: number;
-  status: 'active' | 'inactive';
-  phone: string;
-  email: string;
+  status: string;
 }
 
-export default function Stores({ onLogout, currentUser }: any) {
+export default function Stores() {
   const [stores, setStores] = useState<Store[]>([
-    {
-      id: '1',
-      name: 'Ya Lesedi Sandton',
-      location: 'Sandton, Johannesburg',
-      manager: 'David Mthembu',
-      staff: 45,
-      rating: 4.8,
-      status: 'active',
-      phone: '+27 11 123 4567',
-      email: 'sandton@yalesedi.com',
-    },
-    {
-      id: '2',
-      name: 'Ya Lesedi Rosebank',
-      location: 'Rosebank, Johannesburg',
-      manager: 'Sarah Nkosi',
-      staff: 38,
-      rating: 4.6,
-      status: 'active',
-      phone: '+27 11 234 5678',
-      email: 'rosebank@yalesedi.com',
-    },
-    {
-      id: '3',
-      name: 'Ya Lesedi Cape Town',
-      location: 'V&A Waterfront, Cape Town',
-      manager: 'James Pieterse',
-      staff: 52,
-      rating: 4.9,
-      status: 'active',
-      phone: '+27 21 345 6789',
-      email: 'capetown@yalesedi.com',
-    },
+    { id: 1, name: 'Downtown Restaurant', location: 'Main Street', manager: 'John Doe', staff: 25, rating: 4.8, status: 'Active' },
+    { id: 2, name: 'Riverside Bistro', location: 'River Road', manager: 'Sarah Smith', staff: 18, rating: 4.6, status: 'Active' },
+    { id: 3, name: 'Garden Café', location: 'Park Avenue', manager: 'Mike Johnson', staff: 12, rating: 4.9, status: 'Active' },
   ]);
 
-  const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState<Omit<Store, 'id'>>({
-    name: '',
-    location: '',
-    manager: '',
-    staff: 0,
-    rating: 4.5,
-    status: 'active',
-    phone: '',
-    email: '',
-  });
-
-  const filteredStores = stores.filter(store =>
-    store.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    store.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    store.manager.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const [newStore, setNewStore] = useState({ name: '', location: '', manager: '', staff: 0 });
 
   const handleAddStore = () => {
-    if (!formData.name || !formData.location || !formData.manager) {
-      alert('Please fill in all required fields');
-      return;
-    }
-
-    if (editingId) {
-      setStores(stores.map(s => s.id === editingId ? { ...s, ...formData } : s));
-      setEditingId(null);
-    } else {
-      const newStore: Store = {
-        id: Date.now().toString(),
-        ...formData,
-      };
-      setStores([...stores, newStore]);
-    }
-
-    setFormData({
-      name: '',
-      location: '',
-      manager: '',
-      staff: 0,
-      rating: 4.5,
-      status: 'active',
-      phone: '',
-      email: '',
-    });
-    setShowForm(false);
-  };
-
-  const handleEditStore = (store: Store) => {
-    setFormData({
-      name: store.name,
-      location: store.location,
-      manager: store.manager,
-      staff: store.staff,
-      rating: store.rating,
-      status: store.status,
-      phone: store.phone,
-      email: store.email,
-    });
-    setEditingId(store.id);
-    setShowForm(true);
-  };
-
-  const handleDeleteStore = (id: string) => {
-    if (confirm('Are you sure you want to delete this store?')) {
-      setStores(stores.filter(s => s.id !== id));
+    if (newStore.name && newStore.location) {
+      setStores([...stores, {
+        id: stores.length + 1,
+        ...newStore,
+        rating: 4.5,
+        status: 'Active'
+      }]);
+      setNewStore({ name: '', location: '', manager: '', staff: 0 });
+      setShowForm(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Navbar currentUser={currentUser} onLogout={onLogout} />
-      
-      <main className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8 flex justify-between items-center">
-          <div>
-            <h1 className="text-4xl font-bold text-slate-900">Store Management</h1>
-            <p className="text-slate-600 mt-2">Manage your restaurant locations and staff</p>
-          </div>
-          <button
-            onClick={() => {
-              setShowForm(true);
-              setEditingId(null);
-              setFormData({
-                name: '',
-                location: '',
-                manager: '',
-                staff: 0,
-                rating: 4.5,
-                status: 'active',
-                phone: '',
-                email: '',
-              });
-            }}
-            className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition"
-          >
-            <Plus size={20} /> Add Store
-          </button>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">Restaurant Locations</h1>
+          <p className="text-slate-600">Manage your restaurant locations and staff</p>
         </div>
 
-        {/* Search */}
-        <div className="mb-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 text-slate-400" size={20} />
-            <input
-              type="text"
-              placeholder="Search by store name, location, or manager..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
-            />
-          </div>
-        </div>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="mb-8 px-6 py-3 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
+        >
+          <Plus className="w-5 h-5" />
+          Add Location
+        </button>
 
-        {/* Add/Edit Form */}
         {showForm && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">
-              {editingId ? 'Edit Store' : 'Add New Store'}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Store Name *</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Ya Lesedi Sandton"
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Location *</label>
-                <input
-                  type="text"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  placeholder="Sandton, Johannesburg"
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Manager *</label>
-                <input
-                  type="text"
-                  value={formData.manager}
-                  onChange={(e) => setFormData({ ...formData, manager: e.target.value })}
-                  placeholder="David Mthembu"
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Staff Count</label>
-                <input
-                  type="number"
-                  value={formData.staff}
-                  onChange={(e) => setFormData({ ...formData, staff: parseInt(e.target.value) || 0 })}
-                  placeholder="45"
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Phone</label>
-                <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder="+27 11 123 4567"
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Email</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="sandton@yalesedi.com"
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Rating</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  max="5"
-                  value={formData.rating}
-                  onChange={(e) => setFormData({ ...formData, rating: parseFloat(e.target.value) || 4.5 })}
-                  placeholder="4.5"
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Status</label>
-                <select
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
+          <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border-l-4 border-amber-600">
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">Add New Location</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <input
+                type="text"
+                placeholder="Restaurant Name"
+                value={newStore.name}
+                onChange={(e) => setNewStore({...newStore, name: e.target.value})}
+                className="px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
+              />
+              <input
+                type="text"
+                placeholder="Location"
+                value={newStore.location}
+                onChange={(e) => setNewStore({...newStore, location: e.target.value})}
+                className="px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
+              />
+              <input
+                type="text"
+                placeholder="Manager Name"
+                value={newStore.manager}
+                onChange={(e) => setNewStore({...newStore, manager: e.target.value})}
+                className="px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
+              />
+              <input
+                type="number"
+                placeholder="Staff Count"
+                value={newStore.staff}
+                onChange={(e) => setNewStore({...newStore, staff: parseInt(e.target.value)})}
+                className="px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
+              />
             </div>
-            <div className="flex gap-4 mt-6">
+            <div className="flex gap-4">
               <button
                 onClick={handleAddStore}
-                className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded-lg transition"
+                className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-all"
               >
-                {editingId ? 'Update' : 'Add'} Store
+                Save
               </button>
               <button
-                onClick={() => {
-                  setShowForm(false);
-                  setEditingId(null);
-                }}
-                className="bg-slate-200 hover:bg-slate-300 text-slate-900 px-6 py-2 rounded-lg transition"
+                onClick={() => setShowForm(false)}
+                className="px-6 py-2 bg-slate-300 hover:bg-slate-400 text-slate-900 font-bold rounded-lg transition-all"
               >
                 Cancel
               </button>
@@ -280,77 +100,43 @@ export default function Stores({ onLogout, currentUser }: any) {
           </div>
         )}
 
-        {/* Stores Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredStores.map((store) => (
-            <div key={store.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-              <div className={`h-2 ${store.status === 'active' ? 'bg-green-500' : 'bg-red-500'}`}></div>
+          {stores.map((store) => (
+            <div key={store.id} className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden group">
+              <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
+                <h3 className="text-xl font-bold mb-2">{store.name}</h3>
+                <div className="flex items-center gap-2 text-blue-100">
+                  <MapPin className="w-4 h-4" />
+                  <p className="text-sm">{store.location}</p>
+                </div>
+              </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-slate-900 mb-2">{store.name}</h3>
-                
-                <div className="space-y-3 mb-4">
+                <div className="mb-4 space-y-2">
+                  <p className="text-sm text-slate-600"><span className="font-semibold text-slate-900">Manager:</span> {store.manager}</p>
                   <div className="flex items-center gap-2 text-slate-600">
-                    <MapPin size={18} className="text-amber-600" />
-                    <span>{store.location}</span>
+                    <Users className="w-4 h-4" />
+                    <p className="text-sm"><span className="font-semibold text-slate-900">{store.staff}</span> Staff</p>
                   </div>
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <Users size={18} className="text-amber-600" />
-                    <span>{store.staff} Staff Members</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <Star size={18} className="text-amber-600 fill-amber-600" />
-                    <span>{store.rating} / 5.0</span>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                    <p className="text-sm font-semibold text-slate-900">{store.rating} Rating</p>
                   </div>
                 </div>
-
-                <div className="border-t border-slate-200 pt-4 mb-4">
-                  <p className="text-sm text-slate-600 mb-1"><strong>Manager:</strong> {store.manager}</p>
-                  <p className="text-sm text-slate-600 mb-1"><strong>Phone:</strong> {store.phone}</p>
-                  <p className="text-sm text-slate-600"><strong>Email:</strong> {store.email}</p>
-                </div>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleEditStore(store)}
-                    className="flex-1 bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition"
-                  >
-                    <Edit2 size={16} /> Edit
+                <div className="flex gap-2 pt-4 border-t border-slate-200">
+                  <button className="flex-1 p-2 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition-all flex items-center justify-center gap-2">
+                    <Edit2 className="w-4 h-4" />
+                    Edit
                   </button>
-                  <button
-                    onClick={() => handleDeleteStore(store.id)}
-                    className="flex-1 bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition"
-                  >
-                    <Trash2 size={16} /> Delete
+                  <button className="flex-1 p-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-all flex items-center justify-center gap-2">
+                    <Trash2 className="w-4 h-4" />
+                    Delete
                   </button>
                 </div>
               </div>
             </div>
           ))}
         </div>
-
-        {/* Empty State */}
-        {filteredStores.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-slate-600 text-lg">No stores found</p>
-          </div>
-        )}
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <p className="text-slate-600 text-sm font-medium">Total Stores</p>
-            <p className="text-3xl font-bold text-slate-900 mt-2">{stores.length}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <p className="text-slate-600 text-sm font-medium">Active Stores</p>
-            <p className="text-3xl font-bold text-green-600 mt-2">{stores.filter(s => s.status === 'active').length}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <p className="text-slate-600 text-sm font-medium">Total Staff</p>
-            <p className="text-3xl font-bold text-blue-600 mt-2">{stores.reduce((sum, s) => sum + s.staff, 0)}</p>
-          </div>
-        </div>
-      </main>
+      </div>
     </div>
   );
 }

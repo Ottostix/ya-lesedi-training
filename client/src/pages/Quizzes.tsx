@@ -1,285 +1,104 @@
 import { useState } from 'react';
-import { Trash2, Edit2, Plus, Search, BookOpen, Users, Clock } from 'lucide-react';
-import Navbar from '@/components/Navbar';
+import { Plus, BookOpen, Users, CheckCircle, Edit2, Trash2 } from 'lucide-react';
 
 interface Quiz {
-  id: string;
+  id: number;
   title: string;
-  category: string;
   questions: number;
-  passingScore: number;
-  timeLimit: number;
-  assignedTo: number;
-  completed: number;
-  status: 'active' | 'inactive';
-  createdDate: string;
+  participants: number;
+  completion: number;
+  difficulty: string;
+  status: string;
 }
 
-export default function Quizzes({ onLogout, currentUser }: any) {
+export default function Quizzes() {
   const [quizzes, setQuizzes] = useState<Quiz[]>([
-    {
-      id: '1',
-      title: 'Food Safety Fundamentals',
-      category: 'Safety',
-      questions: 25,
-      passingScore: 70,
-      timeLimit: 30,
-      assignedTo: 342,
-      completed: 298,
-      status: 'active',
-      createdDate: '2024-01-15',
-    },
-    {
-      id: '2',
-      title: 'Customer Service Excellence',
-      category: 'Service',
-      questions: 20,
-      passingScore: 75,
-      timeLimit: 25,
-      assignedTo: 342,
-      completed: 267,
-      status: 'active',
-      createdDate: '2024-02-10',
-    },
-    {
-      id: '3',
-      title: 'Wine Pairing Basics',
-      category: 'Knowledge',
-      questions: 15,
-      passingScore: 65,
-      timeLimit: 20,
-      assignedTo: 156,
-      completed: 148,
-      status: 'active',
-      createdDate: '2024-03-05',
-    },
-    {
-      id: '4',
-      title: 'Emergency Procedures',
-      category: 'Safety',
-      questions: 30,
-      passingScore: 80,
-      timeLimit: 35,
-      assignedTo: 342,
-      completed: 312,
-      status: 'active',
-      createdDate: '2024-01-20',
-    },
-    {
-      id: '5',
-      title: 'POS System Training',
-      category: 'Technical',
-      questions: 18,
-      passingScore: 70,
-      timeLimit: 25,
-      assignedTo: 200,
-      completed: 187,
-      status: 'active',
-      createdDate: '2024-02-28',
-    },
+    { id: 1, title: 'Food Safety Basics', questions: 20, participants: 145, completion: 87, difficulty: 'Beginner', status: 'Active' },
+    { id: 2, title: 'Customer Service Excellence', questions: 25, participants: 132, completion: 92, difficulty: 'Intermediate', status: 'Active' },
+    { id: 3, title: 'Wine Pairing Fundamentals', questions: 30, participants: 98, completion: 78, difficulty: 'Advanced', status: 'Active' },
+    { id: 4, title: 'Kitchen Operations', questions: 22, participants: 156, completion: 85, difficulty: 'Intermediate', status: 'Active' },
   ]);
 
-  const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState<Omit<Quiz, 'id' | 'assignedTo' | 'completed'>>({
-    title: '',
-    category: 'Safety',
-    questions: 20,
-    passingScore: 70,
-    timeLimit: 30,
-    status: 'active',
-    createdDate: new Date().toISOString().split('T')[0],
-  });
-
-  const filteredQuizzes = quizzes.filter(quiz =>
-    quiz.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    quiz.category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const [newQuiz, setNewQuiz] = useState({ title: '', questions: 0, difficulty: 'Beginner' });
 
   const handleAddQuiz = () => {
-    if (!formData.title || !formData.category) {
-      alert('Please fill in all required fields');
-      return;
+    if (newQuiz.title && newQuiz.questions > 0) {
+      setQuizzes([...quizzes, {
+        id: quizzes.length + 1,
+        ...newQuiz,
+        participants: 0,
+        completion: 0,
+        status: 'Active'
+      }]);
+      setNewQuiz({ title: '', questions: 0, difficulty: 'Beginner' });
+      setShowForm(false);
     }
-
-    if (editingId) {
-      setQuizzes(quizzes.map(q => q.id === editingId ? { ...q, ...formData } : q));
-      setEditingId(null);
-    } else {
-      const newQuiz: Quiz = {
-        id: Date.now().toString(),
-        ...formData,
-        assignedTo: 0,
-        completed: 0,
-      };
-      setQuizzes([...quizzes, newQuiz]);
-    }
-
-    setFormData({
-      title: '',
-      category: 'Safety',
-      questions: 20,
-      passingScore: 70,
-      timeLimit: 30,
-      status: 'active',
-      createdDate: new Date().toISOString().split('T')[0],
-    });
-    setShowForm(false);
   };
 
-  const handleEditQuiz = (quiz: Quiz) => {
-    setFormData({
-      title: quiz.title,
-      category: quiz.category,
-      questions: quiz.questions,
-      passingScore: quiz.passingScore,
-      timeLimit: quiz.timeLimit,
-      status: quiz.status,
-      createdDate: quiz.createdDate,
-    });
-    setEditingId(quiz.id);
-    setShowForm(true);
-  };
-
-  const handleDeleteQuiz = (id: string) => {
-    if (confirm('Are you sure you want to delete this quiz?')) {
-      setQuizzes(quizzes.filter(q => q.id !== id));
+  const getDifficultyColor = (difficulty: string) => {
+    switch(difficulty) {
+      case 'Beginner': return 'bg-green-100 text-green-800';
+      case 'Intermediate': return 'bg-yellow-100 text-yellow-800';
+      case 'Advanced': return 'bg-red-100 text-red-800';
+      default: return 'bg-slate-100 text-slate-800';
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Navbar currentUser={currentUser} onLogout={onLogout} />
-      
-      <main className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8 flex justify-between items-center">
-          <div>
-            <h1 className="text-4xl font-bold text-slate-900">Quiz Management</h1>
-            <p className="text-slate-600 mt-2">Create and manage training quizzes</p>
-          </div>
-          <button
-            onClick={() => {
-              setShowForm(true);
-              setEditingId(null);
-              setFormData({
-                title: '',
-                category: 'Safety',
-                questions: 20,
-                passingScore: 70,
-                timeLimit: 30,
-                status: 'active',
-                createdDate: new Date().toISOString().split('T')[0],
-              });
-            }}
-            className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition"
-          >
-            <Plus size={20} /> Create Quiz
-          </button>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">Training Quizzes</h1>
+          <p className="text-slate-600">Create and manage staff training quizzes</p>
         </div>
 
-        {/* Search */}
-        <div className="mb-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 text-slate-400" size={20} />
-            <input
-              type="text"
-              placeholder="Search quizzes..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
-            />
-          </div>
-        </div>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="mb-8 px-6 py-3 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
+        >
+          <Plus className="w-5 h-5" />
+          Create Quiz
+        </button>
 
-        {/* Add/Edit Form */}
         {showForm && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">
-              {editingId ? 'Edit Quiz' : 'Create New Quiz'}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Quiz Title *</label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="Food Safety Fundamentals"
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Category *</label>
-                <select
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
-                >
-                  <option value="Safety">Safety</option>
-                  <option value="Service">Service</option>
-                  <option value="Knowledge">Knowledge</option>
-                  <option value="Technical">Technical</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Number of Questions</label>
-                <input
-                  type="number"
-                  value={formData.questions}
-                  onChange={(e) => setFormData({ ...formData, questions: parseInt(e.target.value) || 0 })}
-                  placeholder="20"
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Passing Score (%)</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={formData.passingScore}
-                  onChange={(e) => setFormData({ ...formData, passingScore: parseInt(e.target.value) || 70 })}
-                  placeholder="70"
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Time Limit (minutes)</label>
-                <input
-                  type="number"
-                  value={formData.timeLimit}
-                  onChange={(e) => setFormData({ ...formData, timeLimit: parseInt(e.target.value) || 30 })}
-                  placeholder="30"
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Status</label>
-                <select
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
+          <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border-l-4 border-amber-600">
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">Create New Quiz</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <input
+                type="text"
+                placeholder="Quiz Title"
+                value={newQuiz.title}
+                onChange={(e) => setNewQuiz({...newQuiz, title: e.target.value})}
+                className="px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
+              />
+              <input
+                type="number"
+                placeholder="Number of Questions"
+                value={newQuiz.questions}
+                onChange={(e) => setNewQuiz({...newQuiz, questions: parseInt(e.target.value)})}
+                className="px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
+              />
+              <select
+                value={newQuiz.difficulty}
+                onChange={(e) => setNewQuiz({...newQuiz, difficulty: e.target.value})}
+                className="px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
+              >
+                <option>Beginner</option>
+                <option>Intermediate</option>
+                <option>Advanced</option>
+              </select>
             </div>
-            <div className="flex gap-4 mt-6">
+            <div className="flex gap-4">
               <button
                 onClick={handleAddQuiz}
-                className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded-lg transition"
+                className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-all"
               >
-                {editingId ? 'Update' : 'Create'} Quiz
+                Create
               </button>
               <button
-                onClick={() => {
-                  setShowForm(false);
-                  setEditingId(null);
-                }}
-                className="bg-slate-200 hover:bg-slate-300 text-slate-900 px-6 py-2 rounded-lg transition"
+                onClick={() => setShowForm(false)}
+                className="px-6 py-2 bg-slate-300 hover:bg-slate-400 text-slate-900 font-bold rounded-lg transition-all"
               >
                 Cancel
               </button>
@@ -287,88 +106,49 @@ export default function Quizzes({ onLogout, currentUser }: any) {
           </div>
         )}
 
-        {/* Quizzes Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredQuizzes.map((quiz) => (
-            <div key={quiz.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-              <div className="bg-gradient-to-r from-amber-600 to-amber-700 p-4 text-white">
-                <h3 className="text-lg font-bold">{quiz.title}</h3>
-                <p className="text-amber-100 text-sm">{quiz.category}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {quizzes.map((quiz) => (
+            <div key={quiz.id} className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden">
+              <div className="bg-gradient-to-r from-purple-600 to-purple-700 p-6 text-white">
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="text-xl font-bold">{quiz.title}</h3>
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getDifficultyColor(quiz.difficulty)}`}>
+                    {quiz.difficulty}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-purple-100">
+                  <BookOpen className="w-4 h-4" />
+                  <p className="text-sm">{quiz.questions} Questions</p>
+                </div>
               </div>
               <div className="p-6">
-                <div className="space-y-3 mb-4">
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <BookOpen size={18} className="text-amber-600" />
-                    <span>{quiz.questions} Questions</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <Clock size={18} className="text-amber-600" />
-                    <span>{quiz.timeLimit} Minutes</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <Users size={18} className="text-amber-600" />
-                    <span>{quiz.completed}/{quiz.assignedTo} Completed</span>
-                  </div>
-                </div>
-
-                <div className="border-t border-slate-200 pt-4 mb-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm text-slate-600">Completion Rate</span>
-                    <span className="font-bold text-amber-600">{Math.round((quiz.completed / quiz.assignedTo) * 100)}%</span>
+                <div className="mb-6 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-slate-600">
+                      <Users className="w-4 h-4" />
+                      <span className="text-sm">{quiz.participants} Participants</span>
+                    </div>
+                    <span className="font-bold text-slate-900">{quiz.completion}%</span>
                   </div>
                   <div className="w-full bg-slate-200 rounded-full h-2">
-                    <div 
-                      className="bg-amber-600 h-2 rounded-full"
-                      style={{ width: `${(quiz.completed / quiz.assignedTo) * 100}%` }}
-                    ></div>
+                    <div className="bg-gradient-to-r from-green-500 to-green-600 h-2 rounded-full" style={{width: `${quiz.completion}%`}}></div>
                   </div>
-                  <p className="text-xs text-slate-500 mt-2">Passing Score: {quiz.passingScore}%</p>
                 </div>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleEditQuiz(quiz)}
-                    className="flex-1 bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition"
-                  >
-                    <Edit2 size={16} /> Edit
+                <div className="flex gap-2 pt-4 border-t border-slate-200">
+                  <button className="flex-1 p-2 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition-all flex items-center justify-center gap-2">
+                    <Edit2 className="w-4 h-4" />
+                    Edit
                   </button>
-                  <button
-                    onClick={() => handleDeleteQuiz(quiz.id)}
-                    className="flex-1 bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition"
-                  >
-                    <Trash2 size={16} /> Delete
+                  <button className="flex-1 p-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-all flex items-center justify-center gap-2">
+                    <Trash2 className="w-4 h-4" />
+                    Delete
                   </button>
                 </div>
               </div>
             </div>
           ))}
         </div>
-
-        {/* Empty State */}
-        {filteredQuizzes.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-slate-600 text-lg">No quizzes found</p>
-          </div>
-        )}
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <p className="text-slate-600 text-sm font-medium">Total Quizzes</p>
-            <p className="text-3xl font-bold text-slate-900 mt-2">{quizzes.length}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <p className="text-slate-600 text-sm font-medium">Total Questions</p>
-            <p className="text-3xl font-bold text-blue-600 mt-2">{quizzes.reduce((sum, q) => sum + q.questions, 0)}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <p className="text-slate-600 text-sm font-medium">Avg Completion</p>
-            <p className="text-3xl font-bold text-green-600 mt-2">
-              {Math.round(quizzes.reduce((sum, q) => sum + (q.completed / q.assignedTo), 0) / quizzes.length * 100)}%
-            </p>
-          </div>
-        </div>
-      </main>
+      </div>
     </div>
   );
 }

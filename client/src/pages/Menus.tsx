@@ -1,231 +1,104 @@
 import { useState } from 'react';
-import { Trash2, Download, Plus, Search, FileText, Calendar, User } from 'lucide-react';
-import Navbar from '@/components/Navbar';
+import { Plus, FileText, Upload, Download, Trash2, Calendar } from 'lucide-react';
 
 interface Document {
-  id: string;
+  id: number;
   name: string;
-  type: 'Menu' | 'SOP' | 'Training' | 'Policy';
-  uploadedBy: string;
-  uploadDate: string;
+  type: string;
   size: string;
+  uploadDate: string;
   category: string;
 }
 
-export default function Menus({ onLogout, currentUser }: any) {
+export default function Menus() {
   const [documents, setDocuments] = useState<Document[]>([
-    {
-      id: '1',
-      name: 'Main Menu - Sandton',
-      type: 'Menu',
-      uploadedBy: 'David Mthembu',
-      uploadDate: '2024-10-15',
-      size: '2.4 MB',
-      category: 'Food & Beverage',
-    },
-    {
-      id: '2',
-      name: 'Wine Pairing Guide',
-      type: 'Training',
-      uploadedBy: 'Sarah Nkosi',
-      uploadDate: '2024-10-10',
-      size: '1.8 MB',
-      category: 'Training Materials',
-    },
-    {
-      id: '3',
-      name: 'Food Safety SOP',
-      type: 'SOP',
-      uploadedBy: 'John Dlamini',
-      uploadDate: '2024-10-08',
-      size: '3.1 MB',
-      category: 'Standard Procedures',
-    },
-    {
-      id: '4',
-      name: 'Customer Service Policy',
-      type: 'Policy',
-      uploadedBy: 'Amelia Chen',
-      uploadDate: '2024-10-05',
-      size: '1.2 MB',
-      category: 'Policies',
-    },
-    {
-      id: '5',
-      name: 'Dessert Menu - All Locations',
-      type: 'Menu',
-      uploadedBy: 'David Mthembu',
-      uploadDate: '2024-10-01',
-      size: '2.7 MB',
-      category: 'Food & Beverage',
-    },
+    { id: 1, name: 'Food Safety Guidelines.pdf', type: 'PDF', size: '2.4 MB', uploadDate: '2024-10-15', category: 'Training' },
+    { id: 2, name: 'Menu Descriptions.docx', type: 'DOCX', size: '1.1 MB', uploadDate: '2024-10-14', category: 'Menu' },
+    { id: 3, name: 'Wine Pairing Guide.pdf', type: 'PDF', size: '3.2 MB', uploadDate: '2024-10-13', category: 'Training' },
+    { id: 4, name: 'Beverage Menu.xlsx', type: 'XLSX', size: '0.8 MB', uploadDate: '2024-10-12', category: 'Menu' },
   ]);
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showUploadForm, setShowUploadForm] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    type: 'Menu' as 'Menu' | 'SOP' | 'Training' | 'Policy',
-    category: 'Food & Beverage',
-    file: null as File | null,
-  });
+  const [showUpload, setShowUpload] = useState(false);
+  const [uploadName, setUploadName] = useState('');
+  const [uploadCategory, setUploadCategory] = useState('Menu');
 
-  const filteredDocuments = documents.filter(doc =>
-    doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    doc.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    doc.category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFormData({ ...formData, file: e.target.files[0] });
+  const handleUpload = () => {
+    if (uploadName) {
+      setDocuments([...documents, {
+        id: documents.length + 1,
+        name: uploadName,
+        type: 'PDF',
+        size: '1.5 MB',
+        uploadDate: new Date().toISOString().split('T')[0],
+        category: uploadCategory
+      }]);
+      setUploadName('');
+      setShowUpload(false);
     }
-  };
-
-  const handleUploadDocument = () => {
-    if (!formData.name || !formData.file) {
-      alert('Please fill in all required fields');
-      return;
-    }
-
-    const newDocument: Document = {
-      id: Date.now().toString(),
-      name: formData.name,
-      type: formData.type,
-      uploadedBy: currentUser?.username || 'Unknown',
-      uploadDate: new Date().toISOString().split('T')[0],
-      size: `${(formData.file.size / (1024 * 1024)).toFixed(1)} MB`,
-      category: formData.category,
-    };
-
-    setDocuments([newDocument, ...documents]);
-    setFormData({
-      name: '',
-      type: 'Menu',
-      category: 'Food & Beverage',
-      file: null,
-    });
-    setShowUploadForm(false);
-  };
-
-  const handleDeleteDocument = (id: string) => {
-    if (confirm('Are you sure you want to delete this document?')) {
-      setDocuments(documents.filter(d => d.id !== id));
-    }
-  };
-
-  const handleDownloadDocument = (doc: Document) => {
-    alert(`Downloading: ${doc.name}`);
   };
 
   const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'Menu':
-        return 'bg-blue-100 text-blue-800';
-      case 'SOP':
-        return 'bg-green-100 text-green-800';
-      case 'Training':
-        return 'bg-purple-100 text-purple-800';
-      case 'Policy':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+    switch(type) {
+      case 'PDF': return 'bg-red-100 text-red-800';
+      case 'DOCX': return 'bg-blue-100 text-blue-800';
+      case 'XLSX': return 'bg-green-100 text-green-800';
+      default: return 'bg-slate-100 text-slate-800';
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Navbar currentUser={currentUser} onLogout={onLogout} />
-      
-      <main className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8 flex justify-between items-center">
-          <div>
-            <h1 className="text-4xl font-bold text-slate-900">Documents & Menus</h1>
-            <p className="text-slate-600 mt-2">Upload and manage training materials and menus</p>
-          </div>
-          <button
-            onClick={() => setShowUploadForm(true)}
-            className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition"
-          >
-            <Plus size={20} /> Upload Document
-          </button>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">Documents & Menus</h1>
+          <p className="text-slate-600">Upload and manage training materials and menus</p>
         </div>
 
-        {/* Search */}
-        <div className="mb-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 text-slate-400" size={20} />
-            <input
-              type="text"
-              placeholder="Search documents..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
-            />
-          </div>
-        </div>
+        <button
+          onClick={() => setShowUpload(!showUpload)}
+          className="mb-8 px-6 py-3 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
+        >
+          <Upload className="w-5 h-5" />
+          Upload Document
+        </button>
 
-        {/* Upload Form */}
-        {showUploadForm && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">Upload New Document</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Document Name *</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Main Menu - Sandton"
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Document Type</label>
-                <select
-                  value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
-                >
-                  <option value="Menu">Menu</option>
-                  <option value="SOP">Standard Operating Procedure</option>
-                  <option value="Training">Training Material</option>
-                  <option value="Policy">Policy</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Category</label>
-                <select
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
-                >
-                  <option value="Food & Beverage">Food & Beverage</option>
-                  <option value="Training Materials">Training Materials</option>
-                  <option value="Standard Procedures">Standard Procedures</option>
-                  <option value="Policies">Policies</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">File *</label>
-                <input
-                  type="file"
-                  onChange={handleFileChange}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
-                />
-              </div>
-            </div>
-            <div className="flex gap-4 mt-6">
-              <button
-                onClick={handleUploadDocument}
-                className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded-lg transition"
+        {showUpload && (
+          <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border-l-4 border-amber-600">
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">Upload New Document</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <input
+                type="text"
+                placeholder="Document Name"
+                value={uploadName}
+                onChange={(e) => setUploadName(e.target.value)}
+                className="px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
+              />
+              <select
+                value={uploadCategory}
+                onChange={(e) => setUploadCategory(e.target.value)}
+                className="px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
               >
-                Upload Document
+                <option>Menu</option>
+                <option>Training</option>
+                <option>Policy</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center mb-4 hover:border-amber-600 transition-colors">
+              <Upload className="w-12 h-12 text-slate-400 mx-auto mb-2" />
+              <p className="text-slate-600 font-medium">Click to upload or drag and drop</p>
+              <p className="text-slate-500 text-sm">PDF, DOCX, XLSX up to 10MB</p>
+            </div>
+            <div className="flex gap-4">
+              <button
+                onClick={handleUpload}
+                className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-all"
+              >
+                Upload
               </button>
               <button
-                onClick={() => setShowUploadForm(false)}
-                className="bg-slate-200 hover:bg-slate-300 text-slate-900 px-6 py-2 rounded-lg transition"
+                onClick={() => setShowUpload(false)}
+                className="px-6 py-2 bg-slate-300 hover:bg-slate-400 text-slate-900 font-bold rounded-lg transition-all"
               >
                 Cancel
               </button>
@@ -233,29 +106,25 @@ export default function Menus({ onLogout, currentUser }: any) {
           </div>
         )}
 
-        {/* Documents List */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-slate-100 border-b border-slate-200">
-                <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Document Name</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Type</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Category</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Uploaded By</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Date</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Size</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Actions</th>
+              <thead>
+                <tr className="bg-gradient-to-r from-slate-900 to-slate-800 text-white">
+                  <th className="px-6 py-4 text-left font-bold">Document Name</th>
+                  <th className="px-6 py-4 text-left font-bold">Type</th>
+                  <th className="px-6 py-4 text-left font-bold">Category</th>
+                  <th className="px-6 py-4 text-left font-bold">Size</th>
+                  <th className="px-6 py-4 text-left font-bold">Upload Date</th>
+                  <th className="px-6 py-4 text-left font-bold">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredDocuments.map((doc) => (
-                  <tr key={doc.id} className="border-b border-slate-200 hover:bg-slate-50">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <FileText size={18} className="text-amber-600" />
-                        <span className="font-medium text-slate-900">{doc.name}</span>
-                      </div>
+                {documents.map((doc) => (
+                  <tr key={doc.id} className="border-b border-slate-200 hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4 flex items-center gap-3">
+                      <FileText className="w-5 h-5 text-slate-400" />
+                      <span className="font-semibold text-slate-900">{doc.name}</span>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getTypeColor(doc.type)}`}>
@@ -263,21 +132,17 @@ export default function Menus({ onLogout, currentUser }: any) {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-slate-600">{doc.category}</td>
-                    <td className="px-6 py-4 text-slate-600">{doc.uploadedBy}</td>
-                    <td className="px-6 py-4 text-slate-600">{new Date(doc.uploadDate).toLocaleDateString()}</td>
                     <td className="px-6 py-4 text-slate-600">{doc.size}</td>
+                    <td className="px-6 py-4 flex items-center gap-2 text-slate-600">
+                      <Calendar className="w-4 h-4" />
+                      {doc.uploadDate}
+                    </td>
                     <td className="px-6 py-4 flex gap-2">
-                      <button
-                        onClick={() => handleDownloadDocument(doc)}
-                        className="text-blue-600 hover:text-blue-800 transition"
-                      >
-                        <Download size={18} />
+                      <button className="p-2 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition-all">
+                        <Download className="w-4 h-4" />
                       </button>
-                      <button
-                        onClick={() => handleDeleteDocument(doc.id)}
-                        className="text-red-600 hover:text-red-800 transition"
-                      >
-                        <Trash2 size={18} />
+                      <button className="p-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-all">
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </td>
                   </tr>
@@ -286,34 +151,7 @@ export default function Menus({ onLogout, currentUser }: any) {
             </table>
           </div>
         </div>
-
-        {/* Empty State */}
-        {filteredDocuments.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-slate-600 text-lg">No documents found</p>
-          </div>
-        )}
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <p className="text-slate-600 text-sm font-medium">Total Documents</p>
-            <p className="text-3xl font-bold text-slate-900 mt-2">{documents.length}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <p className="text-slate-600 text-sm font-medium">Menus</p>
-            <p className="text-3xl font-bold text-blue-600 mt-2">{documents.filter(d => d.type === 'Menu').length}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <p className="text-slate-600 text-sm font-medium">Training Materials</p>
-            <p className="text-3xl font-bold text-purple-600 mt-2">{documents.filter(d => d.type === 'Training').length}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <p className="text-slate-600 text-sm font-medium">Policies</p>
-            <p className="text-3xl font-bold text-red-600 mt-2">{documents.filter(d => d.type === 'Policy').length}</p>
-          </div>
-        </div>
-      </main>
+      </div>
     </div>
   );
 }

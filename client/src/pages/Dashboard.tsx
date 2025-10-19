@@ -1,234 +1,177 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useLocation } from 'wouter';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Users, BookOpen, Store, TrendingUp, Award, Clock } from 'lucide-react';
-import Navbar from '@/components/Navbar';
+import { BarChart3, Users, BookOpen, FileText, TrendingUp, Award } from 'lucide-react';
 
-const COLORS = ['#d4af37', '#c9a227', '#1a1a2e', '#2d2d44'];
+interface StatCard {
+  label: string;
+  value: string | number;
+  change: string;
+  icon: React.ReactNode;
+  color: string;
+}
 
 export default function Dashboard() {
-  const [currentUser, setCurrentUser] = useState<any>(null);
   const [, setLocation] = useLocation();
+  const [user] = useState(() => {
+    const stored = localStorage.getItem('user');
+    return stored ? JSON.parse(stored) : null;
+  });
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
-    
-    if (!token || !user) {
-      setLocation('/');
-      return;
-    }
-    
-    try {
-      setCurrentUser(JSON.parse(user));
-    } catch (error) {
-      console.error('Failed to parse user:', error);
-      setLocation('/');
-    }
-  }, [setLocation]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+  if (!user) {
     setLocation('/');
-  };
+    return null;
+  }
 
-  // Mock data for charts
-  const performanceData = [
-    { month: 'Jan', avgScore: 65, completion: 45, certified: 12 },
-    { month: 'Feb', avgScore: 72, completion: 52, certified: 18 },
-    { month: 'Mar', avgScore: 78, completion: 58, certified: 25 },
-    { month: 'Apr', avgScore: 82, completion: 65, certified: 32 },
-    { month: 'May', avgScore: 85, completion: 72, certified: 40 },
-    { month: 'Jun', avgScore: 88, completion: 78, certified: 48 },
-  ];
-
-  const departmentData = [
-    { name: 'Kitchen', value: 45 },
-    { name: 'Front of House', value: 35 },
-    { name: 'Management', value: 15 },
-    { name: 'Support', value: 5 },
+  const stats: StatCard[] = [
+    {
+      label: 'Total Restaurants',
+      value: '47',
+      change: '+12% from last month',
+      icon: <BarChart3 className="w-6 h-6" />,
+      color: 'from-amber-500 to-amber-600',
+    },
+    {
+      label: 'Active Staff',
+      value: '523',
+      change: '+8% from last month',
+      icon: <Users className="w-6 h-6" />,
+      color: 'from-blue-500 to-blue-600',
+    },
+    {
+      label: 'Training Modules',
+      value: '28',
+      change: '+3 new modules',
+      icon: <BookOpen className="w-6 h-6" />,
+      color: 'from-green-500 to-green-600',
+    },
+    {
+      label: 'Completion Rate',
+      value: '92.5%',
+      change: '+2.3% improvement',
+      icon: <Award className="w-6 h-6" />,
+      color: 'from-purple-500 to-purple-600',
+    },
   ];
 
   const recentActivities = [
-    { id: 1, user: 'John Dlamini', action: 'Completed Food Safety Quiz', time: '2 hours ago', score: 92 },
-    { id: 2, user: 'Sarah Nkosi', action: 'Completed Customer Service Training', time: '4 hours ago', score: 88 },
-    { id: 3, user: 'Mike Johnson', action: 'Started Emergency Procedures Quiz', time: '6 hours ago', score: null },
-    { id: 4, user: 'Amelia Chen', action: 'Completed Wine Pairing Module', time: '1 day ago', score: 95 },
-    { id: 5, user: 'David Mthembu', action: 'Completed POS System Training', time: '1 day ago', score: 87 },
+    { name: 'John Doe', action: 'Completed Module: Food Safety', time: '2 hours ago', status: 'success' },
+    { name: 'Sarah Smith', action: 'Started Quiz: Customer Service', time: '4 hours ago', status: 'info' },
+    { name: 'Mike Johnson', action: 'Uploaded Document: Menu Update', time: '6 hours ago', status: 'success' },
+    { name: 'Emma Wilson', action: 'Assigned to Training: Wine Pairing', time: '8 hours ago', status: 'info' },
   ];
 
-  const StatCard = ({ icon: Icon, label, value, unit = '', trend = '+5%', color = 'text-amber-600' }: any) => (
-    <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-      <div className="flex items-center justify-between mb-4">
-        <div className={`p-3 bg-amber-50 rounded-lg`}>
-          <Icon className={`w-6 h-6 ${color}`} />
-        </div>
-        <span className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded">{trend}</span>
-      </div>
-      <p className="text-slate-600 text-sm font-medium mb-1">{label}</p>
-      <p className="text-3xl font-bold text-slate-900">{value}{unit}</p>
-    </div>
-  );
-
-  if (!currentUser) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
-          <p className="text-slate-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Navbar currentUser={currentUser} onLogout={handleLogout} />
-      
-      <main className="container mx-auto px-4 py-8">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-900 mb-2">Welcome, {currentUser.username}!</h1>
-          <p className="text-slate-600">Here's your training system overview</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white shadow-2xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold mb-2">Welcome, {user.username}!</h1>
+              <p className="text-slate-300 text-lg">Restaurant Training Management Dashboard</p>
+            </div>
+            <div className="text-right">
+              <p className="text-slate-300 text-sm mb-2">Role: <span className="font-bold text-amber-400">{user.role || 'User'}</span></p>
+              <button
+                onClick={() => {
+                  localStorage.removeItem('token');
+                  localStorage.removeItem('user');
+                  setLocation('/');
+                }}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
         </div>
+      </div>
 
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard 
-            icon={Store} 
-            label="Active Stores" 
-            value={24}
-            trend="+3"
-            color="text-amber-600"
-          />
-          <StatCard 
-            icon={Users} 
-            label="Staff Trained" 
-            value={342}
-            trend="+28"
-            color="text-blue-600"
-          />
-          <StatCard 
-            icon={Award} 
-            label="Certifications" 
-            value={156}
-            trend="+12"
-            color="text-green-600"
-          />
-          <StatCard 
-            icon={TrendingUp} 
-            label="Avg Score" 
-            value={88}
-            unit="%"
-            trend="+4%"
-            color="text-purple-600"
-          />
-        </div>
-
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          {/* Performance Trend */}
-          <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold text-slate-900 mb-4">Training Performance Trend</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={performanceData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e0dcd5" />
-                <XAxis dataKey="month" stroke="#666" />
-                <YAxis stroke="#666" />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#fff', border: '1px solid #e0dcd5' }}
-                  formatter={(value) => `${value}%`}
-                />
-                <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="avgScore" 
-                  stroke="#d4af37" 
-                  strokeWidth={2}
-                  name="Avg Score"
-                  dot={{ fill: '#d4af37', r: 4 }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="completion" 
-                  stroke="#1a1a2e" 
-                  strokeWidth={2}
-                  name="Completion Rate"
-                  dot={{ fill: '#1a1a2e', r: 4 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Department Distribution */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold text-slate-900 mb-4">Staff by Department</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={departmentData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, value }) => `${name}: ${value}`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {departmentData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => `${value} staff`} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Certifications Chart */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-xl font-bold text-slate-900 mb-4">Monthly Certifications Issued</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={performanceData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e0dcd5" />
-              <XAxis dataKey="month" stroke="#666" />
-              <YAxis stroke="#666" />
-              <Tooltip 
-                contentStyle={{ backgroundColor: '#fff', border: '1px solid #e0dcd5' }}
-                formatter={(value) => `${value} certificates`}
-              />
-              <Legend />
-              <Bar dataKey="certified" fill="#d4af37" name="Certifications Issued" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Recent Activities */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-bold text-slate-900 mb-4">Recent Activities</h2>
-          <div className="space-y-4">
-            {recentActivities.map((activity) => (
-              <div key={activity.id} className="flex items-center justify-between p-4 border-l-4 border-amber-600 bg-amber-50 rounded">
-                <div className="flex-1">
-                  <p className="font-semibold text-slate-900">{activity.user}</p>
-                  <p className="text-sm text-slate-600">{activity.action}</p>
-                  <p className="text-xs text-slate-500 flex items-center gap-1 mt-1">
-                    <Clock size={12} /> {activity.time}
-                  </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          {stats.map((stat, idx) => (
+            <div
+              key={idx}
+              className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden group"
+            >
+              <div className={`bg-gradient-to-br ${stat.color} p-6 text-white`}>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="opacity-80 group-hover:opacity-100 transition-opacity">{stat.icon}</div>
+                  <TrendingUp className="w-5 h-5 opacity-50" />
                 </div>
-                {activity.score && (
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-amber-600">{activity.score}%</p>
-                    <p className="text-xs text-slate-500">Score</p>
-                  </div>
-                )}
+                <h3 className="text-sm font-semibold opacity-90 mb-2">{stat.label}</h3>
+                <p className="text-3xl font-bold mb-2">{stat.value}</p>
+              </div>
+              <div className="p-4 bg-slate-50">
+                <p className="text-xs text-slate-600 font-medium">{stat.change}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+          <button className="bg-white rounded-2xl shadow-lg hover:shadow-2xl p-6 text-left transition-all duration-300 transform hover:-translate-y-1 group border-l-4 border-amber-600">
+            <div className="flex items-center mb-3">
+              <div className="p-3 bg-amber-100 rounded-lg group-hover:bg-amber-200 transition-colors">
+                <Users className="w-6 h-6 text-amber-600" />
+              </div>
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 mb-1">Manage Staff</h3>
+            <p className="text-sm text-slate-600">Add, edit, or remove staff members</p>
+          </button>
+
+          <button className="bg-white rounded-2xl shadow-lg hover:shadow-2xl p-6 text-left transition-all duration-300 transform hover:-translate-y-1 group border-l-4 border-blue-600">
+            <div className="flex items-center mb-3">
+              <div className="p-3 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
+                <BookOpen className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 mb-1">Training Modules</h3>
+            <p className="text-sm text-slate-600">Create and manage training content</p>
+          </button>
+
+          <button className="bg-white rounded-2xl shadow-lg hover:shadow-2xl p-6 text-left transition-all duration-300 transform hover:-translate-y-1 group border-l-4 border-green-600">
+            <div className="flex items-center mb-3">
+              <div className="p-3 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
+                <FileText className="w-6 h-6 text-green-600" />
+              </div>
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 mb-1">Documents</h3>
+            <p className="text-sm text-slate-600">Upload and manage training materials</p>
+          </button>
+        </div>
+
+        {/* Recent Activity */}
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+          <div className="bg-gradient-to-r from-slate-900 to-slate-800 px-6 py-4">
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <TrendingUp className="w-5 h-5" />
+              Recent Activity
+            </h2>
+          </div>
+          <div className="divide-y divide-slate-200">
+            {recentActivities.map((activity, idx) => (
+              <div key={idx} className="p-6 hover:bg-slate-50 transition-colors duration-200 flex items-center justify-between">
+                <div>
+                  <p className="font-semibold text-slate-900">{activity.name}</p>
+                  <p className="text-sm text-slate-600 mt-1">{activity.action}</p>
+                </div>
+                <div className="text-right">
+                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-2 ${
+                    activity.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                  }`}>
+                    {activity.status === 'success' ? 'Completed' : 'In Progress'}
+                  </span>
+                  <p className="text-xs text-slate-500">{activity.time}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
-

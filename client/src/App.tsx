@@ -23,10 +23,10 @@ function Router({ isAuthenticated, currentUser, onLogout }: any) {
     <Switch>
       <Route path={"/dashboard"} component={Dashboard} />
       <Route path={"/"} component={Dashboard} />
-      <Route path={"/users"} component={() => <Users onLogout={onLogout} currentUser={currentUser} />} />
-      <Route path={"/stores"} component={() => <Stores onLogout={onLogout} currentUser={currentUser} />} />
-      <Route path={"/menus"} component={() => <Menus onLogout={onLogout} currentUser={currentUser} />} />
-      <Route path={"/quizzes"} component={() => <Quizzes onLogout={onLogout} currentUser={currentUser} />} />
+      <Route path={"/users"} component={Users} />
+      <Route path={"/stores"} component={Stores} />
+      <Route path={"/menus"} component={Menus} />
+      <Route path={"/quizzes"} component={Quizzes} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>
