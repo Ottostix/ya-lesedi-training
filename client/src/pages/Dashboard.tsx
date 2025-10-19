@@ -1,234 +1,233 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Users, BookOpen, Store, TrendingUp } from 'lucide-react';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Users, BookOpen, Store, TrendingUp, Award, Clock } from 'lucide-react';
+import Navbar from '@/components/Navbar';
 
-const API_BASE_URL = 'https://ya-lesedi-backend.onrender.com/api';
-
-interface DashboardStats {
-  totalStores: number;
-  totalQuizzes: number;
-  averageScore: number;
-  completionRate: number;
-}
+const COLORS = ['#d4af37', '#c9a227', '#1a1a2e', '#2d2d44'];
 
 export default function Dashboard() {
-  const [stats, setStats] = useState<DashboardStats>({
-    totalStores: 0,
-    totalQuizzes: 0,
-    averageScore: 0,
-    completionRate: 0,
-  });
-  const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [, setLocation] = useLocation();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (!token) {
+    const user = localStorage.getItem('user');
+    
+    if (!token || !user) {
       setLocation('/');
       return;
     }
-
-    const fetchStats = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/dashboard/stats`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setStats(data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch stats:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStats();
+    
+    try {
+      setCurrentUser(JSON.parse(user));
+    } catch (error) {
+      console.error('Failed to parse user:', error);
+      setLocation('/');
+    }
   }, [setLocation]);
 
-  const chartData = [
-    { month: 'Jan', score: 65, completion: 45 },
-    { month: 'Feb', score: 72, completion: 52 },
-    { month: 'Mar', score: 78, completion: 58 },
-    { month: 'Apr', score: 82, completion: 65 },
-    { month: 'May', score: 85, completion: 72 },
-    { month: 'Jun', score: 88, completion: 78 },
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setLocation('/');
+  };
+
+  // Mock data for charts
+  const performanceData = [
+    { month: 'Jan', avgScore: 65, completion: 45, certified: 12 },
+    { month: 'Feb', avgScore: 72, completion: 52, certified: 18 },
+    { month: 'Mar', avgScore: 78, completion: 58, certified: 25 },
+    { month: 'Apr', avgScore: 82, completion: 65, certified: 32 },
+    { month: 'May', avgScore: 85, completion: 72, certified: 40 },
+    { month: 'Jun', avgScore: 88, completion: 78, certified: 48 },
   ];
 
-  const StatCard = ({ icon: Icon, label, value, unit = '' }: any) => (
-    <div className="luxury-card p-6 hover:shadow-lg transition-all duration-300">
+  const departmentData = [
+    { name: 'Kitchen', value: 45 },
+    { name: 'Front of House', value: 35 },
+    { name: 'Management', value: 15 },
+    { name: 'Support', value: 5 },
+  ];
+
+  const recentActivities = [
+    { id: 1, user: 'John Dlamini', action: 'Completed Food Safety Quiz', time: '2 hours ago', score: 92 },
+    { id: 2, user: 'Sarah Nkosi', action: 'Completed Customer Service Training', time: '4 hours ago', score: 88 },
+    { id: 3, user: 'Mike Johnson', action: 'Started Emergency Procedures Quiz', time: '6 hours ago', score: null },
+    { id: 4, user: 'Amelia Chen', action: 'Completed Wine Pairing Module', time: '1 day ago', score: 95 },
+    { id: 5, user: 'David Mthembu', action: 'Completed POS System Training', time: '1 day ago', score: 87 },
+  ];
+
+  const StatCard = ({ icon: Icon, label, value, unit = '', trend = '+5%', color = 'text-amber-600' }: any) => (
+    <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
       <div className="flex items-center justify-between mb-4">
-        <div className="p-3 bg-primary/10 rounded-lg">
-          <Icon className="w-6 h-6 text-primary" />
+        <div className={`p-3 bg-amber-50 rounded-lg`}>
+          <Icon className={`w-6 h-6 ${color}`} />
         </div>
-        <span className="text-xs font-semibold text-primary uppercase tracking-wider">Live</span>
+        <span className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded">{trend}</span>
       </div>
       <p className="text-slate-600 text-sm font-medium mb-1">{label}</p>
       <p className="text-3xl font-bold text-slate-900">{value}{unit}</p>
     </div>
   );
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white py-12 px-6 md:px-12">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center gap-6 mb-6">
-            <img 
-              src="/ya-lesedi-logo.jpg" 
-              alt="Ya Lesedi" 
-              className="w-20 h-20 object-contain drop-shadow-lg"
-            />
-            <div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-2">Dashboard</h1>
-              <p className="text-slate-300 text-lg">Welcome back to Ya Lesedi Training System</p>
-            </div>
-          </div>
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading...</p>
         </div>
       </div>
+    );
+  }
 
-      <div className="max-w-7xl mx-auto px-6 md:px-12 py-12">
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <Navbar currentUser={currentUser} onLogout={handleLogout} />
+      
+      <main className="container mx-auto px-4 py-8">
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">Welcome, {currentUser.username}!</h1>
+          <p className="text-slate-600">Here's your training system overview</p>
+        </div>
+
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard 
             icon={Store} 
-            label="Total Stores" 
-            value={stats.totalStores}
-          />
-          <StatCard 
-            icon={BookOpen} 
-            label="Training Quizzes" 
-            value={stats.totalQuizzes}
-          />
-          <StatCard 
-            icon={TrendingUp} 
-            label="Average Score" 
-            value={stats.averageScore.toFixed(1)}
-            unit="%"
+            label="Active Stores" 
+            value={24}
+            trend="+3"
+            color="text-amber-600"
           />
           <StatCard 
             icon={Users} 
-            label="Completion Rate" 
-            value={stats.completionRate.toFixed(1)}
+            label="Staff Trained" 
+            value={342}
+            trend="+28"
+            color="text-blue-600"
+          />
+          <StatCard 
+            icon={Award} 
+            label="Certifications" 
+            value={156}
+            trend="+12"
+            color="text-green-600"
+          />
+          <StatCard 
+            icon={TrendingUp} 
+            label="Avg Score" 
+            value={88}
             unit="%"
+            trend="+4%"
+            color="text-purple-600"
           />
         </div>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-          {/* Training Performance Chart */}
-          <div className="luxury-card p-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">Training Performance</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Performance Trend */}
+          <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-bold text-slate-900 mb-4">Training Performance Trend</h2>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={chartData}>
+              <LineChart data={performanceData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e0dcd5" />
-                <XAxis dataKey="month" stroke="#666666" />
-                <YAxis stroke="#666666" />
+                <XAxis dataKey="month" stroke="#666" />
+                <YAxis stroke="#666" />
                 <Tooltip 
-                  contentStyle={{
-                    backgroundColor: '#ffffff',
-                    border: '2px solid #d4af37',
-                    borderRadius: '8px',
-                  }}
+                  contentStyle={{ backgroundColor: '#fff', border: '1px solid #e0dcd5' }}
+                  formatter={(value) => `${value}%`}
                 />
                 <Legend />
                 <Line 
                   type="monotone" 
-                  dataKey="score" 
+                  dataKey="avgScore" 
                   stroke="#d4af37" 
-                  strokeWidth={3}
-                  dot={{ fill: '#d4af37', r: 6 }}
-                  activeDot={{ r: 8 }}
-                  name="Avg Score (%)"
+                  strokeWidth={2}
+                  name="Avg Score"
+                  dot={{ fill: '#d4af37', r: 4 }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="completion" 
+                  stroke="#1a1a2e" 
+                  strokeWidth={2}
+                  name="Completion Rate"
+                  dot={{ fill: '#1a1a2e', r: 4 }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
 
-          {/* Completion Rate Chart */}
-          <div className="luxury-card p-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">Completion Trends</h2>
+          {/* Department Distribution */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-bold text-slate-900 mb-4">Staff by Department</h2>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e0dcd5" />
-                <XAxis dataKey="month" stroke="#666666" />
-                <YAxis stroke="#666666" />
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: '#ffffff',
-                    border: '2px solid #d4af37',
-                    borderRadius: '8px',
-                  }}
-                />
-                <Legend />
-                <Bar 
-                  dataKey="completion" 
-                  fill="#d4af37"
-                  radius={[8, 8, 0, 0]}
-                  name="Completion (%)"
-                />
-              </BarChart>
+              <PieChart>
+                <Pie
+                  data={departmentData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, value }) => `${name}: ${value}`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {departmentData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value) => `${value} staff`} />
+              </PieChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Key Metrics */}
-        <div className="luxury-card p-8 mb-12">
-          <h2 className="text-2xl font-bold text-slate-900 mb-6">Key Performance Indicators</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="gold-accent">
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">Staff Engagement</h3>
-              <p className="text-3xl font-bold text-primary mb-2">94%</p>
-              <p className="text-sm text-slate-600">Active participation in training modules</p>
-            </div>
-            <div className="gold-accent">
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">Certification Rate</h3>
-              <p className="text-3xl font-bold text-primary mb-2">87%</p>
-              <p className="text-sm text-slate-600">Staff successfully certified</p>
-            </div>
-            <div className="gold-accent">
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">Training ROI</h3>
-              <p className="text-3xl font-bold text-primary mb-2">340%</p>
-              <p className="text-sm text-slate-600">Return on investment in training</p>
-            </div>
-          </div>
+        {/* Certifications Chart */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <h2 className="text-xl font-bold text-slate-900 mb-4">Monthly Certifications Issued</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={performanceData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e0dcd5" />
+              <XAxis dataKey="month" stroke="#666" />
+              <YAxis stroke="#666" />
+              <Tooltip 
+                contentStyle={{ backgroundColor: '#fff', border: '1px solid #e0dcd5' }}
+                formatter={(value) => `${value} certificates`}
+              />
+              <Legend />
+              <Bar dataKey="certified" fill="#d4af37" name="Certifications Issued" radius={[8, 8, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
 
-        {/* Recent Activity */}
-        <div className="luxury-card p-8">
-          <h2 className="text-2xl font-bold text-slate-900 mb-6">Recent Activity</h2>
+        {/* Recent Activities */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-bold text-slate-900 mb-4">Recent Activities</h2>
           <div className="space-y-4">
-            {[
-              { action: 'Staff Certification', user: 'John Smith', time: '2 hours ago', status: 'completed' },
-              { action: 'Quiz Completed', user: 'Sarah Johnson', time: '4 hours ago', status: 'completed' },
-              { action: 'Training Module Started', user: 'Mike Davis', time: '6 hours ago', status: 'in-progress' },
-              { action: 'New Store Added', user: 'Admin', time: '1 day ago', status: 'completed' },
-            ].map((activity, idx) => (
-              <div key={idx} className="flex items-center justify-between p-4 border-b border-slate-200 last:border-b-0 hover:bg-slate-50 transition-colors">
-                <div>
-                  <p className="font-semibold text-slate-900">{activity.action}</p>
-                  <p className="text-sm text-slate-600">{activity.user}</p>
+            {recentActivities.map((activity) => (
+              <div key={activity.id} className="flex items-center justify-between p-4 border-l-4 border-amber-600 bg-amber-50 rounded">
+                <div className="flex-1">
+                  <p className="font-semibold text-slate-900">{activity.user}</p>
+                  <p className="text-sm text-slate-600">{activity.action}</p>
+                  <p className="text-xs text-slate-500 flex items-center gap-1 mt-1">
+                    <Clock size={12} /> {activity.time}
+                  </p>
                 </div>
-                <div className="text-right">
-                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                    activity.status === 'completed' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-blue-100 text-blue-800'
-                  }`}>
-                    {activity.status === 'completed' ? '✓ Completed' : '⟳ In Progress'}
-                  </span>
-                  <p className="text-xs text-slate-500 mt-1">{activity.time}</p>
-                </div>
+                {activity.score && (
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-amber-600">{activity.score}%</p>
+                    <p className="text-xs text-slate-500">Score</p>
+                  </div>
+                )}
               </div>
             ))}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

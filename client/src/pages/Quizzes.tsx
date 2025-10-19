@@ -1,237 +1,374 @@
-import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useState } from 'react';
+import { Trash2, Edit2, Plus, Search, BookOpen, Users, Clock } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 
-const API_BASE_URL = 'https://ya-lesedi-backend.onrender.com/api';
+interface Quiz {
+  id: string;
+  title: string;
+  category: string;
+  questions: number;
+  passingScore: number;
+  timeLimit: number;
+  assignedTo: number;
+  completed: number;
+  status: 'active' | 'inactive';
+  createdDate: string;
+}
 
 export default function Quizzes({ onLogout, currentUser }: any) {
-  const [quizzes, setQuizzes] = useState<any[]>([]);
-  const [stores, setStores] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [message, setMessage] = useState<any>({ type: '', text: '' });
-  const [showForm, setShowForm] = useState(false);
-  const [newQuiz, setNewQuiz] = useState({ title: '', description: '', store_id: '', total_questions: 10, passing_score: 70 });
+  const [quizzes, setQuizzes] = useState<Quiz[]>([
+    {
+      id: '1',
+      title: 'Food Safety Fundamentals',
+      category: 'Safety',
+      questions: 25,
+      passingScore: 70,
+      timeLimit: 30,
+      assignedTo: 342,
+      completed: 298,
+      status: 'active',
+      createdDate: '2024-01-15',
+    },
+    {
+      id: '2',
+      title: 'Customer Service Excellence',
+      category: 'Service',
+      questions: 20,
+      passingScore: 75,
+      timeLimit: 25,
+      assignedTo: 342,
+      completed: 267,
+      status: 'active',
+      createdDate: '2024-02-10',
+    },
+    {
+      id: '3',
+      title: 'Wine Pairing Basics',
+      category: 'Knowledge',
+      questions: 15,
+      passingScore: 65,
+      timeLimit: 20,
+      assignedTo: 156,
+      completed: 148,
+      status: 'active',
+      createdDate: '2024-03-05',
+    },
+    {
+      id: '4',
+      title: 'Emergency Procedures',
+      category: 'Safety',
+      questions: 30,
+      passingScore: 80,
+      timeLimit: 35,
+      assignedTo: 342,
+      completed: 312,
+      status: 'active',
+      createdDate: '2024-01-20',
+    },
+    {
+      id: '5',
+      title: 'POS System Training',
+      category: 'Technical',
+      questions: 18,
+      passingScore: 70,
+      timeLimit: 25,
+      assignedTo: 200,
+      completed: 187,
+      status: 'active',
+      createdDate: '2024-02-28',
+    },
+  ]);
+
   const [searchTerm, setSearchTerm] = useState('');
-  const token = localStorage.getItem('token');
-
-  useEffect(() => {
-    loadQuizzes();
-    loadStores();
-  }, []);
-
-  const loadQuizzes = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch(`${API_BASE_URL}/quizzes`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setQuizzes(data.quizzes || []);
-      }
-    } catch (error) {
-      console.error('Error loading quizzes:', error);
-      setMessage({ type: 'error', text: 'Failed to load quizzes' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const loadStores = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/stores`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setStores(data.stores || []);
-      }
-    } catch (error) {
-      console.error('Error loading stores:', error);
-    }
-  };
-
-  const handleCreateQuiz = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const response = await fetch(`${API_BASE_URL}/quizzes`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(newQuiz)
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessage({ type: 'success', text: 'Quiz created successfully!' });
-        setNewQuiz({ title: '', description: '', store_id: '', total_questions: 10, passing_score: 70 });
-        setShowForm(false);
-        loadQuizzes();
-      } else {
-        setMessage({ type: 'error', text: data.message || 'Failed to create quiz' });
-      }
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Connection error' });
-    }
-  };
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [formData, setFormData] = useState<Omit<Quiz, 'id' | 'assignedTo' | 'completed'>>({
+    title: '',
+    category: 'Safety',
+    questions: 20,
+    passingScore: 70,
+    timeLimit: 30,
+    status: 'active',
+    createdDate: new Date().toISOString().split('T')[0],
+  });
 
   const filteredQuizzes = quizzes.filter(quiz =>
-    quiz.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    quiz.store_name?.toLowerCase().includes(searchTerm.toLowerCase())
+    quiz.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    quiz.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleAddQuiz = () => {
+    if (!formData.title || !formData.category) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    if (editingId) {
+      setQuizzes(quizzes.map(q => q.id === editingId ? { ...q, ...formData } : q));
+      setEditingId(null);
+    } else {
+      const newQuiz: Quiz = {
+        id: Date.now().toString(),
+        ...formData,
+        assignedTo: 0,
+        completed: 0,
+      };
+      setQuizzes([...quizzes, newQuiz]);
+    }
+
+    setFormData({
+      title: '',
+      category: 'Safety',
+      questions: 20,
+      passingScore: 70,
+      timeLimit: 30,
+      status: 'active',
+      createdDate: new Date().toISOString().split('T')[0],
+    });
+    setShowForm(false);
+  };
+
+  const handleEditQuiz = (quiz: Quiz) => {
+    setFormData({
+      title: quiz.title,
+      category: quiz.category,
+      questions: quiz.questions,
+      passingScore: quiz.passingScore,
+      timeLimit: quiz.timeLimit,
+      status: quiz.status,
+      createdDate: quiz.createdDate,
+    });
+    setEditingId(quiz.id);
+    setShowForm(true);
+  };
+
+  const handleDeleteQuiz = (id: string) => {
+    if (confirm('Are you sure you want to delete this quiz?')) {
+      setQuizzes(quizzes.filter(q => q.id !== id));
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar currentUser={currentUser} onLogout={onLogout} />
       
       <main className="container mx-auto px-4 py-8">
+        {/* Header */}
         <div className="mb-8 flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Quiz Management</h1>
-            <p className="text-slate-600 mt-1">Create and manage training quizzes</p>
+            <h1 className="text-4xl font-bold text-slate-900">Quiz Management</h1>
+            <p className="text-slate-600 mt-2">Create and manage training quizzes</p>
           </div>
-          {(currentUser?.role === 'master' || currentUser?.role === 'manager') && (
-            <Button
-              onClick={() => setShowForm(!showForm)}
-              className="bg-amber-600 hover:bg-amber-700"
-            >
-              {showForm ? 'Cancel' : 'Create Quiz'}
-            </Button>
-          )}
+          <button
+            onClick={() => {
+              setShowForm(true);
+              setEditingId(null);
+              setFormData({
+                title: '',
+                category: 'Safety',
+                questions: 20,
+                passingScore: 70,
+                timeLimit: 30,
+                status: 'active',
+                createdDate: new Date().toISOString().split('T')[0],
+              });
+            }}
+            className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition"
+          >
+            <Plus size={20} /> Create Quiz
+          </button>
         </div>
 
-        {message.text && (
-          <Alert variant={message.type === 'error' ? 'destructive' : 'default'} className="mb-4">
-            <AlertDescription>{message.text}</AlertDescription>
-          </Alert>
-        )}
+        {/* Search */}
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-3 text-slate-400" size={20} />
+            <input
+              type="text"
+              placeholder="Search quizzes..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
+            />
+          </div>
+        </div>
 
-        {showForm && (currentUser?.role === 'master' || currentUser?.role === 'manager') && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>Create New Quiz</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleCreateQuiz} className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium">Quiz Title</label>
-                  <Input
-                    type="text"
-                    placeholder="Quiz Title"
-                    value={newQuiz.title}
-                    onChange={(e) => setNewQuiz({ ...newQuiz, title: e.target.value })}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium">Description</label>
-                  <textarea
-                    placeholder="Quiz Description"
-                    value={newQuiz.description}
-                    onChange={(e) => setNewQuiz({ ...newQuiz, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-md"
-                    rows={3}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="text-sm font-medium">Select Store</label>
-                    <select
-                      value={newQuiz.store_id}
-                      onChange={(e) => setNewQuiz({ ...newQuiz, store_id: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-md"
-                      required
-                    >
-                      <option value="">Choose a store...</option>
-                      {stores.map(store => (
-                        <option key={store.id} value={store.id}>{store.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium">Total Questions</label>
-                    <Input
-                      type="number"
-                      min="1"
-                      value={newQuiz.total_questions}
-                      onChange={(e) => setNewQuiz({ ...newQuiz, total_questions: parseInt(e.target.value) })}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium">Passing Score (%)</label>
-                    <Input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={newQuiz.passing_score}
-                      onChange={(e) => setNewQuiz({ ...newQuiz, passing_score: parseInt(e.target.value) })}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <Button type="submit" className="bg-amber-600 hover:bg-amber-700">
-                  Create Quiz
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        )}
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Quizzes List</CardTitle>
-            <CardDescription>Total quizzes: {quizzes.length}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="mb-4">
-              <Input
-                type="text"
-                placeholder="Search quizzes..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="border-slate-200"
-              />
+        {/* Add/Edit Form */}
+        {showForm && (
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 className="text-2xl font-bold text-slate-900 mb-4">
+              {editingId ? 'Edit Quiz' : 'Create New Quiz'}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Quiz Title *</label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="Food Safety Fundamentals"
+                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Category *</label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
+                >
+                  <option value="Safety">Safety</option>
+                  <option value="Service">Service</option>
+                  <option value="Knowledge">Knowledge</option>
+                  <option value="Technical">Technical</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Number of Questions</label>
+                <input
+                  type="number"
+                  value={formData.questions}
+                  onChange={(e) => setFormData({ ...formData, questions: parseInt(e.target.value) || 0 })}
+                  placeholder="20"
+                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Passing Score (%)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={formData.passingScore}
+                  onChange={(e) => setFormData({ ...formData, passingScore: parseInt(e.target.value) || 70 })}
+                  placeholder="70"
+                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Time Limit (minutes)</label>
+                <input
+                  type="number"
+                  value={formData.timeLimit}
+                  onChange={(e) => setFormData({ ...formData, timeLimit: parseInt(e.target.value) || 30 })}
+                  placeholder="30"
+                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Status</label>
+                <select
+                  value={formData.status}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
+                >
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
             </div>
+            <div className="flex gap-4 mt-6">
+              <button
+                onClick={handleAddQuiz}
+                className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded-lg transition"
+              >
+                {editingId ? 'Update' : 'Create'} Quiz
+              </button>
+              <button
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingId(null);
+                }}
+                className="bg-slate-200 hover:bg-slate-300 text-slate-900 px-6 py-2 rounded-lg transition"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
 
-            {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+        {/* Quizzes Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredQuizzes.map((quiz) => (
+            <div key={quiz.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
+              <div className="bg-gradient-to-r from-amber-600 to-amber-700 p-4 text-white">
+                <h3 className="text-lg font-bold">{quiz.title}</h3>
+                <p className="text-amber-100 text-sm">{quiz.category}</p>
               </div>
-            ) : filteredQuizzes.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredQuizzes.map((quiz: any) => (
-                  <div key={quiz.id} className="p-4 border border-slate-200 rounded-lg hover:border-amber-300 hover:shadow-md transition">
-                    <h3 className="font-semibold text-slate-900 text-lg">{quiz.title}</h3>
-                    <p className="text-sm text-slate-600 mt-2">{quiz.description}</p>
-                    <p className="text-sm text-slate-600 mt-2">Store: <span className="font-medium">{quiz.store_name}</span></p>
-                    <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-100">
-                      <span className="text-xs text-slate-500">{quiz.total_questions} questions</span>
-                      <span className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded">Pass: {quiz.passing_score}%</span>
-                    </div>
+              <div className="p-6">
+                <div className="space-y-3 mb-4">
+                  <div className="flex items-center gap-2 text-slate-600">
+                    <BookOpen size={18} className="text-amber-600" />
+                    <span>{quiz.questions} Questions</span>
                   </div>
-                ))}
+                  <div className="flex items-center gap-2 text-slate-600">
+                    <Clock size={18} className="text-amber-600" />
+                    <span>{quiz.timeLimit} Minutes</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-600">
+                    <Users size={18} className="text-amber-600" />
+                    <span>{quiz.completed}/{quiz.assignedTo} Completed</span>
+                  </div>
+                </div>
+
+                <div className="border-t border-slate-200 pt-4 mb-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm text-slate-600">Completion Rate</span>
+                    <span className="font-bold text-amber-600">{Math.round((quiz.completed / quiz.assignedTo) * 100)}%</span>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-2">
+                    <div 
+                      className="bg-amber-600 h-2 rounded-full"
+                      style={{ width: `${(quiz.completed / quiz.assignedTo) * 100}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-2">Passing Score: {quiz.passingScore}%</p>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleEditQuiz(quiz)}
+                    className="flex-1 bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition"
+                  >
+                    <Edit2 size={16} /> Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteQuiz(quiz.id)}
+                    className="flex-1 bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition"
+                  >
+                    <Trash2 size={16} /> Delete
+                  </button>
+                </div>
               </div>
-            ) : (
-              <div className="text-center py-8 text-slate-500">
-                No quizzes found
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            </div>
+          ))}
+        </div>
+
+        {/* Empty State */}
+        {filteredQuizzes.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-slate-600 text-lg">No quizzes found</p>
+          </div>
+        )}
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <p className="text-slate-600 text-sm font-medium">Total Quizzes</p>
+            <p className="text-3xl font-bold text-slate-900 mt-2">{quizzes.length}</p>
+          </div>
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <p className="text-slate-600 text-sm font-medium">Total Questions</p>
+            <p className="text-3xl font-bold text-blue-600 mt-2">{quizzes.reduce((sum, q) => sum + q.questions, 0)}</p>
+          </div>
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <p className="text-slate-600 text-sm font-medium">Avg Completion</p>
+            <p className="text-3xl font-bold text-green-600 mt-2">
+              {Math.round(quizzes.reduce((sum, q) => sum + (q.completed / q.assignedTo), 0) / quizzes.length * 100)}%
+            </p>
+          </div>
+        </div>
       </main>
     </div>
   );
 }
-
