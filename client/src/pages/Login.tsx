@@ -1,8 +1,4 @@
 import { useState } from 'react';
-import { useLocation } from 'wouter';
-import { Eye, EyeOff } from 'lucide-react';
-
-const API_BASE_URL = 'https://ya-lesedi-backend.onrender.com/api';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -10,7 +6,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [, setLocation] = useLocation();
+  
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,7 +14,7 @@ export default function Login() {
     setError('');
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      const response = await fetch('https://ya-lesedi-backend.onrender.com/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -30,131 +26,385 @@ export default function Login() {
         const data = await response.json();
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        setLocation('/dashboard');
+        window.location.href = '/dashboard';
       } else {
-        setError('Invalid credentials. Please try again.');
+        setError('Invalid username or password');
       }
     } catch (err) {
-      setError('Connection error. Please try again.');
-      console.error('Login error:', err);
+      setError('Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const demoLogin = (user: string, pass: string) => {
-    setUsername(user);
-    setPassword(pass);
+  const fillDemoCredentials = (type: 'admin' | 'staff') => {
+    if (type === 'admin') {
+      setUsername('Tshepo');
+      setPassword('2402');
+    } else {
+      setUsername('staff');
+      setPassword('password');
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center px-4 py-8 relative overflow-hidden">
-      {/* Premium Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-amber-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-        <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{animationDelay: '2s'}}></div>
-        <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-amber-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{animationDelay: '4s'}}></div>
-      </div>
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #16213e 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '2rem',
+      fontFamily: "'Inter', sans-serif"
+    }}>
+      {/* Animated background elements */}
+      <div style={{
+        position: 'fixed',
+        top: '10%',
+        left: '10%',
+        width: '300px',
+        height: '300px',
+        background: 'radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, transparent 70%)',
+        borderRadius: '50%',
+        filter: 'blur(40px)',
+        animation: 'float 6s ease-in-out infinite',
+      }} />
+      <div style={{
+        position: 'fixed',
+        bottom: '10%',
+        right: '10%',
+        width: '400px',
+        height: '400px',
+        background: 'radial-gradient(circle, rgba(255, 140, 66, 0.1) 0%, transparent 70%)',
+        borderRadius: '50%',
+        filter: 'blur(40px)',
+        animation: 'float 8s ease-in-out infinite reverse',
+      }} />
 
-      <div className="relative z-10 w-full max-w-md">
-        {/* Logo Section */}
-        <div className="text-center mb-12">
-          <div className="inline-block mb-6 transform hover:scale-110 transition-transform duration-300">
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(30px); }
+        }
+        
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
+
+      <div style={{
+        position: 'relative',
+        zIndex: 10,
+        width: '100%',
+        maxWidth: '450px',
+        animation: 'slideIn 0.8s ease-out'
+      }}>
+        {/* Logo and Title */}
+        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+          <div style={{
+            width: '120px',
+            height: '120px',
+            margin: '0 auto 1.5rem',
+            background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(255, 140, 66, 0.05) 100%)',
+            border: '2px solid rgba(212, 175, 55, 0.3)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backdropFilter: 'blur(10px)',
+          }}>
             <img 
               src="/1000551394.jpg" 
-              alt="Ya Lesedi Logo" 
-              className="w-32 h-32 rounded-full shadow-2xl border-4 border-amber-600 object-cover"
+              alt="Ya Lesedi Logo"
+              style={{
+                width: '100px',
+                height: '100px',
+                borderRadius: '50%',
+                objectFit: 'cover'
+              }}
             />
           </div>
-          <h1 className="text-5xl font-bold text-white mb-2">Ya Lesedi</h1>
-          <p className="text-2xl text-amber-400 mb-2">Restaurant Training System</p>
-          <p className="text-slate-300 text-lg">Excellence in Hospitality Excellence</p>
+          <h1 style={{
+            fontSize: '2.5rem',
+            fontFamily: "'Playfair Display', serif",
+            fontWeight: 700,
+            color: '#ffffff',
+            marginBottom: '0.5rem',
+            letterSpacing: '-1px'
+          }}>
+            Ya Lesedi
+          </h1>
+          <p style={{
+            fontSize: '1.1rem',
+            color: '#d4af37',
+            marginBottom: '0.5rem',
+            fontFamily: "'Lora', serif"
+          }}>
+            Restaurant Training System
+          </p>
+          <p style={{
+            fontSize: '0.9rem',
+            color: '#b8bcc4',
+            fontFamily: "'Lora', serif"
+          }}>
+            Excellence in Hospitality Excellence
+          </p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl p-8 mb-8 border border-white/20">
-          {/* Error Message */}
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm font-medium">
-              {error}
-            </div>
-          )}
-
-          {/* Form */}
-          <form onSubmit={handleLogin} className="space-y-6">
+        <div style={{
+          background: 'rgba(26, 31, 46, 0.7)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(212, 175, 55, 0.2)',
+          borderRadius: '16px',
+          padding: '2.5rem',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+        }}>
+          <form onSubmit={handleLogin}>
             {/* Username Field */}
-            <div className="group">
-              <label className="block text-sm font-semibold text-slate-900 mb-2">Username</label>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '0.9rem',
+                fontWeight: 600,
+                color: '#ffffff',
+                marginBottom: '0.5rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>
+                Username
+              </label>
               <input
                 type="text"
+                placeholder="Enter your username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your username"
-                className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-100 transition-all duration-300 bg-slate-50 group-hover:bg-white"
-                disabled={loading}
+                style={{
+                  width: '100%',
+                  padding: '0.875rem 1rem',
+                  background: 'rgba(36, 45, 61, 0.8)',
+                  border: '1px solid rgba(212, 175, 55, 0.2)',
+                  borderRadius: '8px',
+                  color: '#ffffff',
+                  fontSize: '1rem',
+                  fontFamily: "'Inter', sans-serif",
+                  transition: 'all 0.3s ease',
+                  outline: 'none',
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#d4af37';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(212, 175, 55, 0.1)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'rgba(212, 175, 55, 0.2)';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
             </div>
 
             {/* Password Field */}
-            <div className="group">
-              <label className="block text-sm font-semibold text-slate-900 mb-2">Password</label>
-              <div className="relative">
+            <div style={{ marginBottom: '2rem' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '0.9rem',
+                fontWeight: 600,
+                color: '#ffffff',
+                marginBottom: '0.5rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>
+                Password
+              </label>
+              <div style={{ position: 'relative' }}>
                 <input
                   type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-100 transition-all duration-300 bg-slate-50 group-hover:bg-white pr-12"
-                  disabled={loading}
+                  style={{
+                    width: '100%',
+                    padding: '0.875rem 1rem',
+                    paddingRight: '2.5rem',
+                    background: 'rgba(36, 45, 61, 0.8)',
+                    border: '1px solid rgba(212, 175, 55, 0.2)',
+                    borderRadius: '8px',
+                    color: '#ffffff',
+                    fontSize: '1rem',
+                    fontFamily: "'Inter', sans-serif",
+                    transition: 'all 0.3s ease',
+                    outline: 'none',
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#d4af37';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(212, 175, 55, 0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = 'rgba(212, 175, 55, 0.2)';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 hover:text-amber-600 transition-colors"
-                  disabled={loading}
+                  style={{
+                    position: 'absolute',
+                    right: '1rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    color: '#d4af37',
+                    cursor: 'pointer',
+                    fontSize: '1.2rem',
+                    padding: 0,
+                  }}
                 >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showPassword ? '👁️' : '👁️‍🗨️'}
                 </button>
               </div>
             </div>
+
+            {/* Error Message */}
+            {error && (
+              <div style={{
+                background: 'rgba(231, 76, 60, 0.1)',
+                border: '1px solid rgba(231, 76, 60, 0.3)',
+                borderRadius: '8px',
+                padding: '0.75rem 1rem',
+                marginBottom: '1.5rem',
+                color: '#e74c3c',
+                fontSize: '0.9rem',
+              }}>
+                {error}
+              </div>
+            )}
 
             {/* Sign In Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95"
+              style={{
+                width: '100%',
+                padding: '1rem',
+                background: loading 
+                  ? 'linear-gradient(135deg, #aa8c2c 0%, #8a6e1f 100%)'
+                  : 'linear-gradient(135deg, #d4af37 0%, #aa8c2c 100%)',
+                color: '#000',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                fontWeight: 700,
+                fontFamily: "'Inter', sans-serif",
+                cursor: loading ? 'not-allowed' : 'pointer',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 4px 15px rgba(212, 175, 55, 0.3)',
+                transform: loading ? 'scale(0.98)' : 'scale(1)',
+              }}
+              onMouseEnter={(e) => {
+                if (!loading) {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 25px rgba(212, 175, 55, 0.5)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!loading) {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(212, 175, 55, 0.3)';
+                }
+              }}
             >
               {loading ? 'Signing In...' : 'Sign In'}
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="my-8 flex items-center">
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent"></div>
-            <span className="px-4 text-slate-500 text-sm font-medium">Demo Credentials</span>
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent"></div>
-          </div>
-
           {/* Demo Credentials */}
-          <div className="space-y-3">
-            <div className="p-4 bg-gradient-to-r from-amber-50 to-amber-100 rounded-lg border border-amber-200 cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:scale-105"
-              onClick={() => demoLogin('Tshepo', '2402')}>
-              <p className="text-xs font-semibold text-amber-900 mb-1">Master Admin</p>
-              <p className="text-sm font-mono text-amber-800"><span className="font-bold">Tshepo</span> / <span className="font-bold">2402</span></p>
-            </div>
+          <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid rgba(212, 175, 55, 0.1)' }}>
+            <p style={{
+              textAlign: 'center',
+              fontSize: '0.85rem',
+              color: '#b8bcc4',
+              marginBottom: '1rem',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
+            }}>
+              Demo Credentials
+            </p>
+            
+            <button
+              type="button"
+              onClick={() => fillDemoCredentials('admin')}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                background: 'rgba(212, 175, 55, 0.1)',
+                border: '1px solid rgba(212, 175, 55, 0.2)',
+                borderRadius: '8px',
+                color: '#d4af37',
+                fontSize: '0.9rem',
+                fontWeight: 600,
+                fontFamily: "'Inter', sans-serif",
+                cursor: 'pointer',
+                marginBottom: '0.75rem',
+                transition: 'all 0.3s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(212, 175, 55, 0.2)';
+                e.currentTarget.style.borderColor = '#d4af37';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(212, 175, 55, 0.1)';
+                e.currentTarget.style.borderColor = 'rgba(212, 175, 55, 0.2)';
+              }}
+            >
+              👨‍💼 Master Admin: Tshepo / 2402
+            </button>
 
-            <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200 cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:scale-105"
-              onClick={() => demoLogin('staff', 'password')}>
-              <p className="text-xs font-semibold text-blue-900 mb-1">Staff User</p>
-              <p className="text-sm font-mono text-blue-800"><span className="font-bold">staff</span> / <span className="font-bold">password</span></p>
-            </div>
+            <button
+              type="button"
+              onClick={() => fillDemoCredentials('staff')}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                background: 'rgba(52, 152, 219, 0.1)',
+                border: '1px solid rgba(52, 152, 219, 0.2)',
+                borderRadius: '8px',
+                color: '#3498db',
+                fontSize: '0.9rem',
+                fontWeight: 600,
+                fontFamily: "'Inter', sans-serif",
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(52, 152, 219, 0.2)';
+                e.currentTarget.style.borderColor = '#3498db';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(52, 152, 219, 0.1)';
+                e.currentTarget.style.borderColor = 'rgba(52, 152, 219, 0.2)';
+              }}
+            >
+              👤 Staff User: staff / password
+            </button>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="text-center text-slate-400 text-sm">
-          <p className="mb-2">© 2024 Ya Lesedi Restaurant Training System. All rights reserved.</p>
-          <p>Transforming hospitality excellence through professional training</p>
+        <div style={{
+          textAlign: 'center',
+          marginTop: '2rem',
+          color: '#8a8f99',
+          fontSize: '0.85rem',
+        }}>
+          <p>© 2024 Ya Lesedi Restaurant Training System. All rights reserved.</p>
+          <p style={{ marginTop: '0.5rem' }}>Transforming hospitality excellence through professional training</p>
         </div>
       </div>
     </div>
