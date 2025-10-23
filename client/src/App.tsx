@@ -11,7 +11,10 @@ import Menus from "./pages/Menus";
 import Quizzes from "./pages/Quizzes";
 import TrainingModules from "./pages/TrainingModules";
 import LandingPage from "./pages/LandingPage";
+import AIQuizGeneration from "./pages/AIQuizGeneration";
+import RoleManagement from "./pages/RoleManagement";
 import NotFound from "./pages/NotFound";
+import { RBACProvider } from "./contexts/RBACContext";
 import { useState, useEffect } from "react";
 
 const API_BASE_URL = 'https://ya-lesedi-backend.onrender.com/api';
@@ -28,7 +31,8 @@ function Router({ isAuthenticated, currentUser, onLogout }: any) {
   }
 
   return (
-    <Switch>
+    <RBACProvider>
+      <Switch>
       <Route path={"/dashboard"} component={Dashboard} />
       <Route path={"/"} component={Dashboard} />
       <Route path={"/users"} component={Users} />
@@ -36,9 +40,12 @@ function Router({ isAuthenticated, currentUser, onLogout }: any) {
       <Route path={"/menus"} component={Menus} />
       <Route path={"/quizzes"} component={Quizzes} />
       <Route path={"/training-modules"} component={TrainingModules} />
+      <Route path={"/ai-quiz-generator"} component={AIQuizGeneration} />
+      <Route path={"/role-management"} component={RoleManagement} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>
+    </RBACProvider>
   );
 }
 
