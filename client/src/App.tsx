@@ -9,6 +9,8 @@ import Users from "./pages/Users";
 import Stores from "./pages/Stores";
 import Menus from "./pages/Menus";
 import Quizzes from "./pages/Quizzes";
+import TrainingModules from "./pages/TrainingModules";
+import LandingPage from "./pages/LandingPage";
 import NotFound from "./pages/NotFound";
 import { useState, useEffect } from "react";
 
@@ -16,7 +18,13 @@ const API_BASE_URL = 'https://ya-lesedi-backend.onrender.com/api';
 
 function Router({ isAuthenticated, currentUser, onLogout }: any) {
   if (!isAuthenticated) {
-    return <Route component={Login} />;
+    return (
+      <Switch>
+        <Route path={"/"} component={LandingPage} />
+        <Route path={"/login"} component={Login} />
+        <Route component={LandingPage} />
+      </Switch>
+    );
   }
 
   return (
@@ -27,6 +35,7 @@ function Router({ isAuthenticated, currentUser, onLogout }: any) {
       <Route path={"/stores"} component={Stores} />
       <Route path={"/menus"} component={Menus} />
       <Route path={"/quizzes"} component={Quizzes} />
+      <Route path={"/training-modules"} component={TrainingModules} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>

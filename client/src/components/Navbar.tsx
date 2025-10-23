@@ -10,6 +10,7 @@ export default function Navbar({ currentUser, onLogout }: any) {
     ...(currentUser?.role === 'master' || currentUser?.role === 'manager' ? [
       { label: 'Users', href: '/users' },
     ] : []),
+    { label: 'Training Modules', href: '/training-modules' },
     { label: 'Stores', href: '/stores' },
     { label: 'Menus', href: '/menus' },
     { label: 'Quizzes', href: '/quizzes' },
