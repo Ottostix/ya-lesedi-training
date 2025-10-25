@@ -165,14 +165,6 @@ export default function RoleManagement() {
         <div className="mt-8 bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-700/50 rounded-lg p-6">
           <h2 className="text-xl font-bold text-white mb-6">All Available Permissions</h2>
           <div className="space-y-4">
-            {Object.entries(PERMISSIONS).reduce((acc, [_, perm]) => {
-              const category = perm.category;
-              if (!acc[category]) {
-                acc[category] = [];
-              }
-              acc[category].push(perm);
-              return acc;
-            }, {} as Record<string, typeof PERMISSIONS[string][]>)}
             {Object.entries(
               Object.entries(PERMISSIONS).reduce((acc, [_, perm]) => {
                 const category = perm.category;

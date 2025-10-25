@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'wouter';
 
 export default function Dashboard() {
+  const [, setLocation] = useLocation();
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
@@ -237,6 +239,7 @@ export default function Dashboard() {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = '0 4px 15px rgba(212, 175, 55, 0.3)';
               }}
+              onClick={() => setLocation('/users')}
               >
                 👥 Add New Staff Member
               </button>
@@ -244,6 +247,31 @@ export default function Dashboard() {
                 width: '100%',
                 padding: '1rem',
                 background: 'linear-gradient(135deg, #3498db 0%, #2980b9 100%)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 4px 15px rgba(52, 152, 219, 0.3)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 25px rgba(52, 152, 219, 0.5)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(52, 152, 219, 0.3)';
+              }}
+              onClick={() => setLocation('/quizzes')}
+              >
+                📝 Create New Quiz
+              </button>
+              <button style={{
+                width: '100%',
+                padding: '1rem',
+                background: 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)',
                 color: '#fff',
                 border: 'none',
                 borderRadius: '8px',
@@ -262,6 +290,7 @@ export default function Dashboard() {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = '0 4px 15px rgba(52, 152, 219, 0.3)';
               }}
+              onClick={() => setLocation('/quizzes')}
               >
                 📝 Create New Quiz
               </button>
@@ -287,6 +316,7 @@ export default function Dashboard() {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = '0 4px 15px rgba(46, 204, 113, 0.3)';
               }}
+              onClick={() => setLocation('/menus')}
               >
                 📄 Upload Document
               </button>
@@ -312,6 +342,7 @@ export default function Dashboard() {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = '0 4px 15px rgba(155, 89, 182, 0.3)';
               }}
+              onClick={() => setLocation('/stores')}
               >
                 📊 View Analytics
               </button>
