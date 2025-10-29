@@ -1,6 +1,6 @@
 {
   "name": "ya-lesedi-training",
-  "version": "2.0.0-production",
+  "version": "2.0.1-production",
   "type": "module",
   "license": "MIT",
   "scripts": {
