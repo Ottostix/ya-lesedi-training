@@ -1,104 +1,269 @@
-import { useState } from 'react';
-import { Plus, FileText, Upload, Download, Trash2, Calendar } from 'lucide-react';
+import React, { useState } from 'react';
+import { useLocation } from 'wouter';
+import { Plus, Edit2, Trash2, Search, Upload, Download, FileText } from 'lucide-react';
 
 interface Document {
   id: number;
   name: string;
   type: string;
-  size: string;
-  uploadDate: string;
   category: string;
+  uploadDate: string;
+  size: string;
+  downloads: number;
 }
 
 export default function Menus() {
+  const [, setLocation] = useLocation();
   const [documents, setDocuments] = useState<Document[]>([
-    { id: 1, name: 'Food Safety Guidelines.pdf', type: 'PDF', size: '2.4 MB', uploadDate: '2024-10-15', category: 'Training' },
-    { id: 2, name: 'Menu Descriptions.docx', type: 'DOCX', size: '1.1 MB', uploadDate: '2024-10-14', category: 'Menu' },
-    { id: 3, name: 'Wine Pairing Guide.pdf', type: 'PDF', size: '3.2 MB', uploadDate: '2024-10-13', category: 'Training' },
-    { id: 4, name: 'Beverage Menu.xlsx', type: 'XLSX', size: '0.8 MB', uploadDate: '2024-10-12', category: 'Menu' },
+    {
+      id: 1,
+      name: 'Restaurant Menu - Downtown',
+      type: 'PDF',
+      category: 'Menu',
+      uploadDate: '2024-01-15',
+      size: '2.4 MB',
+      downloads: 45,
+    },
+    {
+      id: 2,
+      name: 'Food Safety Guidelines',
+      type: 'PDF',
+      category: 'Training Material',
+      uploadDate: '2024-02-10',
+      size: '1.8 MB',
+      downloads: 128,
+    },
+    {
+      id: 3,
+      name: 'Staff Handbook',
+      type: 'DOCX',
+      category: 'Documentation',
+      uploadDate: '2024-02-20',
+      size: '3.2 MB',
+      downloads: 87,
+    },
+    {
+      id: 4,
+      name: 'Wine Pairing Guide',
+      type: 'PDF',
+      category: 'Training Material',
+      uploadDate: '2024-03-05',
+      size: '5.1 MB',
+      downloads: 62,
+    },
   ]);
 
-  const [showUpload, setShowUpload] = useState(false);
-  const [uploadName, setUploadName] = useState('');
-  const [uploadCategory, setUploadCategory] = useState('Menu');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    type: 'PDF',
+    category: 'Menu',
+  });
 
-  const handleUpload = () => {
-    if (uploadName) {
-      setDocuments([...documents, {
-        id: documents.length + 1,
-        name: uploadName,
-        type: 'PDF',
-        size: '1.5 MB',
-        uploadDate: new Date().toISOString().split('T')[0],
-        category: uploadCategory
-      }]);
-      setUploadName('');
-      setShowUpload(false);
+  const filteredDocuments = documents.filter(d => {
+    const matchesSearch = d.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = filterCategory === 'all' || d.category === filterCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const handleAddDocument = () => {
+    if (formData.name) {
+      if (editingId) {
+        setDocuments(documents.map(d => d.id === editingId ? {
+          ...d,
+          ...formData,
+          size: d.size,
+          downloads: d.downloads,
+        } : d));
+        setEditingId(null);
+      } else {
+        setDocuments([...documents, {
+          id: documents.length + 1,
+          ...formData,
+          uploadDate: new Date().toISOString().split('T')[0],
+          size: '0 MB',
+          downloads: 0,
+        }]);
+      }
+      setFormData({ name: '', type: 'PDF', category: 'Menu' });
+      setShowForm(false);
     }
   };
 
-  const getTypeColor = (type: string) => {
-    switch(type) {
-      case 'PDF': return 'bg-red-100 text-red-800';
-      case 'DOCX': return 'bg-blue-100 text-blue-800';
-      case 'XLSX': return 'bg-green-100 text-green-800';
-      default: return 'bg-slate-100 text-slate-800';
-    }
+  const handleEdit = (d: Document) => {
+    setFormData({
+      name: d.name,
+      type: d.type,
+      category: d.category,
+    });
+    setEditingId(d.id);
+    setShowForm(true);
+  };
+
+  const handleDelete = (id: number) => {
+    setDocuments(documents.filter(d => d.id !== id));
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-900 mb-2">Documents & Menus</h1>
-          <p className="text-slate-600">Upload and manage training materials and menus</p>
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #16213e 100%)',
+      padding: '2rem',
+      fontFamily: "'Inter', sans-serif",
+    }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+        {/* Header */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '2rem',
+        }}>
+          <div>
+            <h1 style={{
+              fontSize: '2.5rem',
+              fontFamily: "'Playfair Display', serif",
+              fontWeight: 700,
+              color: '#ffffff',
+              margin: 0,
+            }}>
+              Documents & Menus
+            </h1>
+            <p style={{ color: '#b8bcc4', marginTop: '0.5rem' }}>
+              Manage training materials and restaurant menus
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              setEditingId(null);
+              setFormData({ name: '', type: 'PDF', category: 'Menu' });
+              setShowForm(!showForm);
+            }}
+            style={{
+              padding: '0.75rem 1.5rem',
+              background: 'linear-gradient(135deg, #d4af37 0%, #aa8c2c 100%)',
+              color: '#000',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '1rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              boxShadow: '0 4px 15px rgba(212, 175, 55, 0.3)',
+            }}
+          >
+            <Upload size={20} /> Upload Document
+          </button>
         </div>
 
-        <button
-          onClick={() => setShowUpload(!showUpload)}
-          className="mb-8 px-6 py-3 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
-        >
-          <Upload className="w-5 h-5" />
-          Upload Document
-        </button>
-
-        {showUpload && (
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border-l-4 border-amber-600">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">Upload New Document</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        {/* Add/Edit Form */}
+        {showForm && (
+          <div style={{
+            background: 'rgba(26, 31, 46, 0.8)',
+            border: '1px solid rgba(212, 175, 55, 0.2)',
+            borderRadius: '12px',
+            padding: '2rem',
+            marginBottom: '2rem',
+            backdropFilter: 'blur(10px)',
+          }}>
+            <h2 style={{
+              fontSize: '1.5rem',
+              fontFamily: "'Playfair Display', serif",
+              color: '#d4af37',
+              marginBottom: '1.5rem',
+            }}>
+              {editingId ? 'Edit Document' : 'Upload New Document'}
+            </h2>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+              gap: '1rem',
+              marginBottom: '1rem',
+            }}>
               <input
                 type="text"
                 placeholder="Document Name"
-                value={uploadName}
-                onChange={(e) => setUploadName(e.target.value)}
-                className="px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                style={{
+                  padding: '0.75rem',
+                  background: 'rgba(36, 45, 61, 0.5)',
+                  border: '1px solid rgba(212, 175, 55, 0.2)',
+                  borderRadius: '6px',
+                  color: '#ffffff',
+                  fontFamily: "'Inter', sans-serif",
+                }}
               />
               <select
-                value={uploadCategory}
-                onChange={(e) => setUploadCategory(e.target.value)}
-                className="px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-amber-600"
+                value={formData.type}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                style={{
+                  padding: '0.75rem',
+                  background: 'rgba(36, 45, 61, 0.5)',
+                  border: '1px solid rgba(212, 175, 55, 0.2)',
+                  borderRadius: '6px',
+                  color: '#ffffff',
+                  fontFamily: "'Inter', sans-serif",
+                }}
               >
-                <option>Menu</option>
-                <option>Training</option>
-                <option>Policy</option>
-                <option>Other</option>
+                <option value="PDF">PDF</option>
+                <option value="DOCX">DOCX</option>
+                <option value="XLSX">XLSX</option>
+                <option value="PPT">PPT</option>
+              </select>
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                style={{
+                  padding: '0.75rem',
+                  background: 'rgba(36, 45, 61, 0.5)',
+                  border: '1px solid rgba(212, 175, 55, 0.2)',
+                  borderRadius: '6px',
+                  color: '#ffffff',
+                  fontFamily: "'Inter', sans-serif",
+                }}
+              >
+                <option value="Menu">Menu</option>
+                <option value="Training Material">Training Material</option>
+                <option value="Documentation">Documentation</option>
+                <option value="Procedures">Procedures</option>
               </select>
             </div>
-            <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center mb-4 hover:border-amber-600 transition-colors">
-              <Upload className="w-12 h-12 text-slate-400 mx-auto mb-2" />
-              <p className="text-slate-600 font-medium">Click to upload or drag and drop</p>
-              <p className="text-slate-500 text-sm">PDF, DOCX, XLSX up to 10MB</p>
-            </div>
-            <div className="flex gap-4">
+            <div style={{ display: 'flex', gap: '1rem' }}>
               <button
-                onClick={handleUpload}
-                className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-all"
+                onClick={handleAddDocument}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  background: 'linear-gradient(135deg, #d4af37 0%, #aa8c2c 100%)',
+                  color: '#000',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
               >
-                Upload
+                {editingId ? 'Update' : 'Upload'} Document
               </button>
               <button
-                onClick={() => setShowUpload(false)}
-                className="px-6 py-2 bg-slate-300 hover:bg-slate-400 text-slate-900 font-bold rounded-lg transition-all"
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingId(null);
+                  setFormData({ name: '', type: 'PDF', category: 'Menu' });
+                }}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  background: 'rgba(212, 175, 55, 0.1)',
+                  color: '#d4af37',
+                  border: '1px solid rgba(212, 175, 55, 0.3)',
+                  borderRadius: '6px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
               >
                 Cancel
               </button>
@@ -106,52 +271,225 @@ export default function Menus() {
           </div>
         )}
 
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-gradient-to-r from-slate-900 to-slate-800 text-white">
-                  <th className="px-6 py-4 text-left font-bold">Document Name</th>
-                  <th className="px-6 py-4 text-left font-bold">Type</th>
-                  <th className="px-6 py-4 text-left font-bold">Category</th>
-                  <th className="px-6 py-4 text-left font-bold">Size</th>
-                  <th className="px-6 py-4 text-left font-bold">Upload Date</th>
-                  <th className="px-6 py-4 text-left font-bold">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {documents.map((doc) => (
-                  <tr key={doc.id} className="border-b border-slate-200 hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4 flex items-center gap-3">
-                      <FileText className="w-5 h-5 text-slate-400" />
-                      <span className="font-semibold text-slate-900">{doc.name}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getTypeColor(doc.type)}`}>
-                        {doc.type}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-slate-600">{doc.category}</td>
-                    <td className="px-6 py-4 text-slate-600">{doc.size}</td>
-                    <td className="px-6 py-4 flex items-center gap-2 text-slate-600">
-                      <Calendar className="w-4 h-4" />
-                      {doc.uploadDate}
-                    </td>
-                    <td className="px-6 py-4 flex gap-2">
-                      <button className="p-2 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition-all">
-                        <Download className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-all">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {/* Search and Filter */}
+        <div style={{
+          display: 'flex',
+          gap: '1rem',
+          marginBottom: '2rem',
+          flexWrap: 'wrap',
+        }}>
+          <div style={{ flex: 1, minWidth: '250px', position: 'relative' }}>
+            <Search style={{
+              position: 'absolute',
+              left: '1rem',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: '#d4af37',
+            }} />
+            <input
+              type="text"
+              placeholder="Search documents..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '0.75rem 1rem 0.75rem 2.5rem',
+                background: 'rgba(36, 45, 61, 0.5)',
+                border: '1px solid rgba(212, 175, 55, 0.2)',
+                borderRadius: '8px',
+                color: '#ffffff',
+                fontFamily: "'Inter', sans-serif",
+              }}
+            />
           </div>
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            style={{
+              padding: '0.75rem 1rem',
+              background: 'rgba(36, 45, 61, 0.5)',
+              border: '1px solid rgba(212, 175, 55, 0.2)',
+              borderRadius: '8px',
+              color: '#ffffff',
+              fontFamily: "'Inter', sans-serif",
+              cursor: 'pointer',
+            }}
+          >
+            <option value="all">All Categories</option>
+            <option value="Menu">Menu</option>
+            <option value="Training Material">Training Material</option>
+            <option value="Documentation">Documentation</option>
+            <option value="Procedures">Procedures</option>
+          </select>
         </div>
+
+        {/* Documents Table */}
+        <div style={{
+          background: 'rgba(26, 31, 46, 0.6)',
+          border: '1px solid rgba(212, 175, 55, 0.1)',
+          borderRadius: '12px',
+          overflow: 'hidden',
+          backdropFilter: 'blur(10px)',
+        }}>
+          <table style={{
+            width: '100%',
+            borderCollapse: 'collapse',
+          }}>
+            <thead>
+              <tr style={{
+                background: 'rgba(212, 175, 55, 0.1)',
+                borderBottom: '1px solid rgba(212, 175, 55, 0.2)',
+              }}>
+                <th style={{
+                  padding: '1rem',
+                  textAlign: 'left',
+                  color: '#d4af37',
+                  fontWeight: 700,
+                  fontFamily: "'Playfair Display', serif",
+                }}>Document Name</th>
+                <th style={{
+                  padding: '1rem',
+                  textAlign: 'left',
+                  color: '#d4af37',
+                  fontWeight: 700,
+                  fontFamily: "'Playfair Display', serif",
+                }}>Type</th>
+                <th style={{
+                  padding: '1rem',
+                  textAlign: 'left',
+                  color: '#d4af37',
+                  fontWeight: 700,
+                  fontFamily: "'Playfair Display', serif",
+                }}>Category</th>
+                <th style={{
+                  padding: '1rem',
+                  textAlign: 'left',
+                  color: '#d4af37',
+                  fontWeight: 700,
+                  fontFamily: "'Playfair Display', serif",
+                }}>Upload Date</th>
+                <th style={{
+                  padding: '1rem',
+                  textAlign: 'left',
+                  color: '#d4af37',
+                  fontWeight: 700,
+                  fontFamily: "'Playfair Display', serif",
+                }}>Size</th>
+                <th style={{
+                  padding: '1rem',
+                  textAlign: 'left',
+                  color: '#d4af37',
+                  fontWeight: 700,
+                  fontFamily: "'Playfair Display', serif",
+                }}>Downloads</th>
+                <th style={{
+                  padding: '1rem',
+                  textAlign: 'center',
+                  color: '#d4af37',
+                  fontWeight: 700,
+                  fontFamily: "'Playfair Display', serif",
+                }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredDocuments.map((doc) => (
+                <tr
+                  key={doc.id}
+                  style={{
+                    borderBottom: '1px solid rgba(212, 175, 55, 0.1)',
+                    transition: 'background 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(212, 175, 55, 0.05)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                  }}
+                >
+                  <td style={{ padding: '1rem', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <FileText size={18} style={{ color: '#d4af37' }} />
+                    {doc.name}
+                  </td>
+                  <td style={{ padding: '1rem', color: '#b8bcc4' }}>{doc.type}</td>
+                  <td style={{ padding: '1rem', color: '#d4af37' }}>{doc.category}</td>
+                  <td style={{ padding: '1rem', color: '#b8bcc4' }}>{doc.uploadDate}</td>
+                  <td style={{ padding: '1rem', color: '#b8bcc4' }}>{doc.size}</td>
+                  <td style={{ padding: '1rem', color: '#ffffff', fontWeight: 600 }}>{doc.downloads}</td>
+                  <td style={{ padding: '1rem', textAlign: 'center' }}>
+                    <button
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#4caf50',
+                        cursor: 'pointer',
+                        marginRight: '1rem',
+                        fontSize: '1.2rem',
+                      }}
+                      title="Download"
+                    >
+                      <Download size={18} />
+                    </button>
+                    <button
+                      onClick={() => handleEdit(doc)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#3498db',
+                        cursor: 'pointer',
+                        marginRight: '1rem',
+                        fontSize: '1.2rem',
+                      }}
+                      title="Edit"
+                    >
+                      <Edit2 size={18} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(doc.id)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#f44336',
+                        cursor: 'pointer',
+                        fontSize: '1.2rem',
+                      }}
+                      title="Delete"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {filteredDocuments.length === 0 && (
+            <div style={{
+              padding: '2rem',
+              textAlign: 'center',
+              color: '#b8bcc4',
+            }}>
+              No documents found. Upload your first document to get started!
+            </div>
+          )}
+        </div>
+
+        {/* Back Button */}
+        <button
+          onClick={() => setLocation('/dashboard')}
+          style={{
+            marginTop: '2rem',
+            padding: '0.75rem 1.5rem',
+            background: 'rgba(212, 175, 55, 0.1)',
+            color: '#d4af37',
+            border: '1px solid rgba(212, 175, 55, 0.3)',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontWeight: 700,
+          }}
+        >
+          ← Back to Dashboard
+        </button>
       </div>
     </div>
   );
 }
+
