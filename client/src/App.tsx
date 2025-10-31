@@ -10,7 +10,7 @@ import Stores from "./pages/Stores";
 import Menus from "./pages/Menus";
 import Quizzes from "./pages/Quizzes";
 import TrainingModules from "./pages/TrainingModules";
-import LandingPage from "./pages/LandingPage";
+import Home from "./pages/Home";
 import AIQuizGeneration from "./pages/AIQuizGeneration";
 import RoleManagement from "./pages/RoleManagement";
 import NotFound from "./pages/NotFound";
@@ -23,9 +23,9 @@ function Router({ isAuthenticated, currentUser, onLogout }: any) {
   if (!isAuthenticated) {
     return (
       <Switch>
-        <Route path={"/"} component={LandingPage} />
+        <Route path={"/"} component={Home} />
         <Route path={"/login"} component={Login} />
-        <Route component={LandingPage} />
+        <Route component={Home} />
       </Switch>
     );
   }
