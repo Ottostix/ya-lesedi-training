@@ -1,5 +1,5 @@
 import { useLocation } from 'wouter';
-import { ChefHat, Users, TrendingUp, Award } from 'lucide-react';
+import { ChefHat, TrendingUp, Users, Award } from 'lucide-react';
 
 export default function Home() {
   const [, setLocation] = useLocation();
@@ -64,7 +64,6 @@ export default function Home() {
           <div style={{
             marginBottom: '3rem',
             fontSize: '5rem',
-            animation: 'pulse 3s ease-in-out infinite',
           }}>
             🍽️
           </div>
@@ -119,13 +118,6 @@ export default function Home() {
               fontWeight: 700,
               cursor: 'pointer',
               boxShadow: '0 8px 32px rgba(212, 175, 55, 0.3)',
-              transition: 'transform 0.2s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
             }}
           >
             Get Started →
@@ -294,70 +286,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section style={{
-        padding: '3rem 2rem',
-        borderTop: '1px solid rgba(212, 175, 55, 0.1)',
-      }}>
-        <div style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '2rem',
-          textAlign: 'center',
-        }}>
-          <div>
-            <div style={{
-              fontSize: '2.5rem',
-              fontFamily: "'Playfair Display', serif",
-              color: '#d4af37',
-              fontWeight: 700,
-              marginBottom: '0.5rem',
-            }}>
-              47+
-            </div>
-            <p style={{ color: '#b8bcc4' }}>Active Restaurants</p>
-          </div>
-          <div>
-            <div style={{
-              fontSize: '2.5rem',
-              fontFamily: "'Playfair Display', serif",
-              color: '#d4af37',
-              fontWeight: 700,
-              marginBottom: '0.5rem',
-            }}>
-              523
-            </div>
-            <p style={{ color: '#b8bcc4' }}>Trained Staff Members</p>
-          </div>
-          <div>
-            <div style={{
-              fontSize: '2.5rem',
-              fontFamily: "'Playfair Display', serif",
-              color: '#d4af37',
-              fontWeight: 700,
-              marginBottom: '0.5rem',
-            }}>
-              92.5%
-            </div>
-            <p style={{ color: '#b8bcc4' }}>Training Completion</p>
-          </div>
-          <div>
-            <div style={{
-              fontSize: '2.5rem',
-              fontFamily: "'Playfair Display', serif",
-              color: '#d4af37',
-              fontWeight: 700,
-              marginBottom: '0.5rem',
-            }}>
-              28
-            </div>
-            <p style={{ color: '#b8bcc4' }}>Training Modules</p>
-          </div>
-        </div>
-      </section>
-
       {/* Footer */}
       <footer style={{
         padding: '2rem',
@@ -369,13 +297,6 @@ export default function Home() {
         <p>© 2024 Ya Lesedi Restaurant Training System. All rights reserved.</p>
         <p style={{ marginTop: '0.5rem' }}>Transforming hospitality excellence through professional training</p>
       </footer>
-
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.7; }
-        }
-      `}</style>
     </div>
   );
 }
