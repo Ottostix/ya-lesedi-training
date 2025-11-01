@@ -132,3 +132,86 @@
 - [x] RBAC service and context (framework)
 - [x] Cloud integration services (framework)
 
+
+
+
+## CRITICAL SECURITY & UX IMPROVEMENTS (Based on Audit)
+
+### Phase 5: Authentication & Session Security (CRITICAL)
+- [ ] Remove hard-coded credentials from codebase
+- [ ] Implement bcrypt password hashing for user accounts
+- [ ] Add rate-limiting (5 attempts per 15 minutes)
+- [ ] Implement account lockout after repeated failures
+- [ ] Add password reset flow with email tokens
+- [ ] Implement optional TOTP 2FA
+- [ ] Set session cookies: Secure, HttpOnly, SameSite=Strict
+- [ ] Add session expiry (2 hours)
+- [ ] Rotate Tshepo password and create secure credentials
+
+### Phase 6: Mobile Responsiveness & UX (HIGH)
+- [ ] Audit CSS breakpoints for mobile (<480px)
+- [ ] Fix layout responsiveness on all devices
+- [ ] Increase tap target sizes (minimum 44x44px)
+- [ ] Add loading spinners and progress indicators
+- [ ] Create 2-step onboarding tour for first-time users
+- [ ] Add inline validation and error messages
+- [ ] Simplify forms and reduce clutter
+- [ ] Add clear primary CTA buttons
+
+### Phase 7: Input Validation & OWASP Protections (HIGH)
+- [ ] Implement server-side input validation
+- [ ] Add CSRF token protection for forms
+- [ ] Sanitize and escape user inputs
+- [ ] Implement parameterized queries (if using DB)
+- [ ] Add XSS protection
+- [ ] Validate file uploads (type, size)
+- [ ] Add SQL injection protections
+
+### Phase 8: Accessibility & Semantic HTML (MEDIUM)
+- [ ] Add semantic HTML tags (header, nav, main, section, article)
+- [ ] Add ARIA labels and roles where appropriate
+- [ ] Ensure WCAG contrast ratios (4.5:1 for text)
+- [ ] Add alt text to all images
+- [ ] Add labels to all form fields
+- [ ] Implement keyboard navigation
+- [ ] Add skip links
+- [ ] Test with screen readers
+
+### Phase 9: Transport Security & Headers (HIGH)
+- [ ] Enforce HTTPS on all pages
+- [ ] Add HSTS header
+- [ ] Add Content-Security-Policy header
+- [ ] Add X-Frame-Options header
+- [ ] Add X-Content-Type-Options header
+- [ ] Add Referrer-Policy header
+- [ ] Implement Helmet middleware
+
+### Phase 10: Performance Optimization (MEDIUM)
+- [ ] Optimize images and convert to WebP
+- [ ] Enable gzip/Brotli compression
+- [ ] Add caching headers for static assets
+- [ ] Defer non-critical JavaScript
+- [ ] Split code bundles
+- [ ] Add CDN for assets
+
+### Phase 11: Observability & Monitoring (MEDIUM)
+- [ ] Add error tracking (Sentry or similar)
+- [ ] Add analytics (GA4 or Matomo)
+- [ ] Add server logging with request IDs
+- [ ] Monitor performance metrics
+
+### Phase 12: Testing & CI/CD (MEDIUM)
+- [ ] Add unit tests for key functions
+- [ ] Add E2E tests for login and core flows
+- [ ] Set up GitHub Actions CI/CD
+- [ ] Enable Dependabot for dependency updates
+- [ ] Run security scans
+
+### Phase 13: Backup & Data Privacy (MEDIUM)
+- [ ] Set up automated DB backups
+- [ ] Encrypt backups
+- [ ] Implement retention policy
+- [ ] Add privacy policy page
+- [ ] Add terms of service page
+- [ ] Document data handling practices
+

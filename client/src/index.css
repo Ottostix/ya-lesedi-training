@@ -193,3 +193,104 @@ input:focus, textarea:focus, select:focus {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary);
 }
+
+/* MOBILE-FIRST RESPONSIVE DESIGN */
+
+/* Base mobile styles (< 480px) */
+@media (max-width: 480px) {
+  body {
+    font-size: 14px;
+  }
+
+  /* Reduce padding on mobile */
+  div[style*="padding: '2rem'"] {
+    padding: 1rem !important;
+  }
+
+  /* Ensure tap targets are at least 44x44px */
+  button, input, select, textarea, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Stack layouts vertically on mobile */
+  div[style*="display: 'flex'"][style*="flexDirection: 'row'"] {
+    flex-direction: column !important;
+  }
+
+  /* Reduce font sizes on mobile */
+  h1 {
+    font-size: 1.5rem !important;
+  }
+
+  h2 {
+    font-size: 1.25rem !important;
+  }
+
+  h3 {
+    font-size: 1.1rem !important;
+  }
+
+  /* Full width inputs and buttons on mobile */
+  input, select, textarea, button {
+    width: 100% !important;
+  }
+
+  /* Reduce grid columns on mobile */
+  div[style*="gridTemplateColumns"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Reduce margins and padding */
+  * {
+    margin-bottom: 0.5rem !important;
+  }
+}
+
+/* Tablet styles (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+  div[style*="gridTemplateColumns: 'repeat(auto-fill"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  h1 {
+    font-size: 2rem !important;
+  }
+
+  div[style*="padding: '2rem'"] {
+    padding: 1.5rem !important;
+  }
+}
+
+/* Desktop styles (769px+) */
+@media (min-width: 769px) {
+  div[style*="gridTemplateColumns: 'repeat(auto-fill"] {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
+  }
+
+  h1 {
+    font-size: 2.5rem !important;
+  }
+}
+
+/* Ensure all interactive elements have proper focus states */
+button:focus, input:focus, select:focus, textarea:focus {
+  outline: 2px solid #d4af37 !important;
+  outline-offset: 2px !important;
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Smooth transitions */
+* {
+  transition: all 0.3s ease;
+}
+
