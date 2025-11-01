@@ -65,18 +65,17 @@ function App() {
 
   const verifyToken = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/verify`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      // Check if token exists (local authentication)
+      if (token) {
+        const user = localStorage.getItem('user');
+        if (user) {
+          setCurrentUser(JSON.parse(user));
+          setIsAuthenticated(true);
+        } else {
+          handleLogout();
         }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setCurrentUser(data.user);
-        setIsAuthenticated(true);
       } else {
-        handleLogout();
+        setIsLoading(false);
       }
     } catch (error) {
       console.error('Token verification failed:', error);

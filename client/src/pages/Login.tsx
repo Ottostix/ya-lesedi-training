@@ -1,12 +1,19 @@
 import { useState } from 'react';
+import { useLocation } from 'wouter';
 
 export default function Login() {
+  const [, setLocation] = useLocation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
+
+  // Mock user database
+  const mockUsers = {
+    'Tshepo': { password: '2402', role: 'Master Admin', id: '1' },
+    'staff': { password: 'password', role: 'Staff', id: '2' }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -14,19 +21,24 @@ export default function Login() {
     setError('');
 
     try {
-      const response = await fetch('https://ya-lesedi-backend.onrender.com/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        window.location.href = '/dashboard';
+      // Check mock credentials
+      const user = mockUsers[username as keyof typeof mockUsers];
+      
+      if (user && user.password === password) {
+        // Create mock token
+        const token = btoa(JSON.stringify({ username, role: user.role, id: user.id }));
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify({ 
+          username, 
+          role: user.role, 
+          id: user.id 
+        }));
+        
+        // Navigate to dashboard
+        setLocation('/dashboard');
       } else {
         setError('Invalid username or password');
       }
@@ -120,16 +132,20 @@ export default function Login() {
             justifyContent: 'center',
             backdropFilter: 'blur(10px)',
           }}>
-            <img 
-              src="/1000551394.jpg" 
-              alt="Ya Lesedi Logo"
-              style={{
-                width: '100px',
-                height: '100px',
-                borderRadius: '50%',
-                objectFit: 'cover'
-              }}
-            />
+            <div style={{
+              width: '100px',
+              height: '100px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #d4af37 0%, #aa8c2c 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '3rem',
+              fontWeight: 'bold',
+              color: '#0f1419',
+            }}>
+              🍽️
+            </div>
           </div>
           <h1 style={{
             fontSize: '2.5rem',
@@ -197,6 +213,7 @@ export default function Login() {
                   fontFamily: "'Inter', sans-serif",
                   transition: 'all 0.3s ease',
                   outline: 'none',
+                  boxSizing: 'border-box',
                 }}
                 onFocus={(e) => {
                   e.target.style.borderColor = '#d4af37';
@@ -240,6 +257,7 @@ export default function Login() {
                     fontFamily: "'Inter', sans-serif",
                     transition: 'all 0.3s ease',
                     outline: 'none',
+                    boxSizing: 'border-box',
                   }}
                   onFocus={(e) => {
                     e.target.style.borderColor = '#d4af37';
@@ -400,13 +418,14 @@ export default function Login() {
         <div style={{
           textAlign: 'center',
           marginTop: '2rem',
-          color: '#8a8f99',
+          color: '#b8bcc4',
           fontSize: '0.85rem',
         }}>
-          <p>© 2024 Ya Lesedi Restaurant Training System. All rights reserved.</p>
-          <p style={{ marginTop: '0.5rem' }}>Transforming hospitality excellence through professional training</p>
+          <p>© 2024 Ya Lesedi Restaurant Training System</p>
+          <p style={{ marginTop: '0.5rem' }}>All rights reserved</p>
         </div>
       </div>
     </div>
   );
 }
+
