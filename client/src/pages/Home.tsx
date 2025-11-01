@@ -63,9 +63,19 @@ export default function Home() {
           {/* Main Logo */}
           <div style={{
             marginBottom: '3rem',
-            fontSize: '5rem',
+            width: '120px',
+            height: '120px',
+            margin: '0 auto 3rem',
           }}>
-            🍽️
+            <img 
+              src="/ya-lesedi-logo.png" 
+              alt="Ya Lesedi Logo"
+              style={{
+                width: '120px',
+                height: '120px',
+                objectFit: 'contain',
+              }}
+            />
           </div>
 
           {/* Main Heading */}

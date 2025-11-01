@@ -132,20 +132,15 @@ export default function Login() {
             justifyContent: 'center',
             backdropFilter: 'blur(10px)',
           }}>
-            <div style={{
-              width: '100px',
-              height: '100px',
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #d4af37 0%, #aa8c2c 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '3rem',
-              fontWeight: 'bold',
-              color: '#0f1419',
-            }}>
-              🍽️
-            </div>
+            <img 
+              src="/ya-lesedi-logo.png" 
+              alt="Ya Lesedi Logo"
+              style={{
+                width: '130px',
+                height: '130px',
+                objectFit: 'contain',
+              }}
+            />
           </div>
           <h1 style={{
             fontSize: '2.5rem',

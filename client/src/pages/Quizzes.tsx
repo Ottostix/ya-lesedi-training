@@ -1,105 +1,83 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
-import { Plus, Edit2, Trash2, Search, Play } from 'lucide-react';
+import { Plus, Edit2, Trash2, X } from 'lucide-react';
 
 interface Quiz {
-  id: number;
+  id: string;
   title: string;
-  description: string;
-  module: string;
+  category: string;
   questions: number;
-  difficulty: string;
   createdDate: string;
-  passRate: number;
+  status: 'active' | 'inactive';
 }
+
+const QUIZ_CATEGORIES = [
+  { id: 'sa-hospitality', name: 'South African Hospitality Standards' },
+  { id: 'fb-menu', name: 'Restaurant-Specific F&B Menu Item Training' },
+  { id: 'cleaning', name: 'Cleaning Procedures' },
+  { id: 'storage', name: 'Storage Procedures' },
+  { id: 'temperature', name: 'Temperature Control Procedures' },
+  { id: 'labour-law', name: 'South African Hospitality Labour Law' },
+];
 
 export default function Quizzes() {
   const [, setLocation] = useLocation();
-  const [quizzes, setQuizzes] = useState<Quiz[]>([
-    {
-      id: 1,
-      title: 'Food Safety Basics',
-      description: 'Essential food safety and hygiene practices',
-      module: 'Food Safety',
-      questions: 25,
-      difficulty: 'Beginner',
-      createdDate: '2024-01-10',
-      passRate: 92,
-    },
-    {
-      id: 2,
-      title: 'Customer Service Excellence',
-      description: 'Best practices for customer interactions',
-      module: 'Customer Service',
-      questions: 20,
-      difficulty: 'Intermediate',
-      createdDate: '2024-02-15',
-      passRate: 88,
-    },
-    {
-      id: 3,
-      title: 'Advanced Cooking Techniques',
-      description: 'Professional cooking methods and standards',
-      module: 'Cooking',
-      questions: 30,
-      difficulty: 'Advanced',
-      createdDate: '2024-03-05',
-      passRate: 75,
-    },
-  ]);
-
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
-    description: '',
-    module: '',
-    difficulty: 'Beginner',
+    category: '',
+    questions: 5,
   });
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredQuizzes = quizzes.filter(q =>
-    q.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    q.module.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Load quizzes from localStorage on mount
+  useEffect(() => {
+    const savedQuizzes = localStorage.getItem('quizzes');
+    if (savedQuizzes) {
+      setQuizzes(JSON.parse(savedQuizzes));
+    }
+  }, []);
 
-  const handleAddQuiz = () => {
-    if (formData.title && formData.description) {
-      if (editingId) {
-        setQuizzes(quizzes.map(q => q.id === editingId ? {
-          ...q,
-          ...formData,
-          questions: q.questions,
-          passRate: q.passRate,
-        } : q));
-        setEditingId(null);
-      } else {
-        setQuizzes([...quizzes, {
-          id: quizzes.length + 1,
-          ...formData,
-          questions: 25,
-          createdDate: new Date().toISOString().split('T')[0],
-          passRate: 0,
-        }]);
-      }
-      setFormData({ title: '', description: '', module: '', difficulty: 'Beginner' });
-      setShowForm(false);
+  // Save quizzes to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('quizzes', JSON.stringify(quizzes));
+  }, [quizzes]);
+
+  const handleCreateQuiz = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.title || !formData.category) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    const newQuiz: Quiz = {
+      id: Date.now().toString(),
+      title: formData.title,
+      category: formData.category,
+      questions: formData.questions,
+      createdDate: new Date().toLocaleDateString(),
+      status: 'active',
+    };
+
+    setQuizzes([...quizzes, newQuiz]);
+    setFormData({ title: '', category: '', questions: 5 });
+    setShowModal(false);
+  };
+
+  const handleDeleteQuiz = (id: string) => {
+    if (confirm('Are you sure you want to delete this quiz?')) {
+      setQuizzes(quizzes.filter(q => q.id !== id));
     }
   };
 
-  const handleEdit = (q: Quiz) => {
-    setFormData({
-      title: q.title,
-      description: q.description,
-      module: q.module,
-      difficulty: q.difficulty,
-    });
-    setEditingId(q.id);
-    setShowForm(true);
-  };
+  const filteredQuizzes = quizzes.filter(quiz =>
+    quiz.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    quiz.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  const handleDelete = (id: number) => {
-    setQuizzes(quizzes.filter(q => q.id !== id));
+  const getCategoryName = (categoryId: string) => {
+    return QUIZ_CATEGORIES.find(c => c.id === categoryId)?.name || categoryId;
   };
 
   return (
@@ -109,7 +87,7 @@ export default function Quizzes() {
       padding: '2rem',
       fontFamily: "'Inter', sans-serif",
     }}>
-      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Header */}
         <div style={{
           display: 'flex',
@@ -123,21 +101,23 @@ export default function Quizzes() {
               fontFamily: "'Playfair Display', serif",
               fontWeight: 700,
               color: '#ffffff',
-              margin: 0,
+              marginBottom: '0.5rem',
             }}>
-              Quiz Management
+              Quizzes Management
             </h1>
-            <p style={{ color: '#b8bcc4', marginTop: '0.5rem' }}>
-              Create and manage training quizzes
+            <p style={{
+              color: '#b8bcc4',
+              fontSize: '1rem',
+            }}>
+              Create and manage training quizzes for your staff
             </p>
           </div>
           <button
-            onClick={() => {
-              setEditingId(null);
-              setFormData({ title: '', description: '', module: '', difficulty: 'Beginner' });
-              setShowForm(!showForm);
-            }}
+            onClick={() => setShowModal(true)}
             style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
               padding: '0.75rem 1.5rem',
               background: 'linear-gradient(135deg, #d4af37 0%, #aa8c2c 100%)',
               color: '#000',
@@ -146,9 +126,6 @@ export default function Quizzes() {
               fontSize: '1rem',
               fontWeight: 700,
               cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
               boxShadow: '0 4px 15px rgba(212, 175, 55, 0.3)',
             }}
           >
@@ -156,137 +133,8 @@ export default function Quizzes() {
           </button>
         </div>
 
-        {/* Add/Edit Form */}
-        {showForm && (
-          <div style={{
-            background: 'rgba(26, 31, 46, 0.8)',
-            border: '1px solid rgba(212, 175, 55, 0.2)',
-            borderRadius: '12px',
-            padding: '2rem',
-            marginBottom: '2rem',
-            backdropFilter: 'blur(10px)',
-          }}>
-            <h2 style={{
-              fontSize: '1.5rem',
-              fontFamily: "'Playfair Display', serif",
-              color: '#d4af37',
-              marginBottom: '1.5rem',
-            }}>
-              {editingId ? 'Edit Quiz' : 'Create New Quiz'}
-            </h2>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-              gap: '1rem',
-              marginBottom: '1rem',
-            }}>
-              <input
-                type="text"
-                placeholder="Quiz Title"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                style={{
-                  padding: '0.75rem',
-                  background: 'rgba(36, 45, 61, 0.5)',
-                  border: '1px solid rgba(212, 175, 55, 0.2)',
-                  borderRadius: '6px',
-                  color: '#ffffff',
-                  fontFamily: "'Inter', sans-serif",
-                }}
-              />
-              <input
-                type="text"
-                placeholder="Module"
-                value={formData.module}
-                onChange={(e) => setFormData({ ...formData, module: e.target.value })}
-                style={{
-                  padding: '0.75rem',
-                  background: 'rgba(36, 45, 61, 0.5)',
-                  border: '1px solid rgba(212, 175, 55, 0.2)',
-                  borderRadius: '6px',
-                  color: '#ffffff',
-                  fontFamily: "'Inter', sans-serif",
-                }}
-              />
-              <select
-                value={formData.difficulty}
-                onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
-                style={{
-                  padding: '0.75rem',
-                  background: 'rgba(36, 45, 61, 0.5)',
-                  border: '1px solid rgba(212, 175, 55, 0.2)',
-                  borderRadius: '6px',
-                  color: '#ffffff',
-                  fontFamily: "'Inter', sans-serif",
-                }}
-              >
-                <option value="Beginner">Beginner</option>
-                <option value="Intermediate">Intermediate</option>
-                <option value="Advanced">Advanced</option>
-              </select>
-            </div>
-            <textarea
-              placeholder="Quiz Description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                background: 'rgba(36, 45, 61, 0.5)',
-                border: '1px solid rgba(212, 175, 55, 0.2)',
-                borderRadius: '6px',
-                color: '#ffffff',
-                fontFamily: "'Inter', sans-serif",
-                minHeight: '100px',
-                marginBottom: '1rem',
-              }}
-            />
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <button
-                onClick={handleAddQuiz}
-                style={{
-                  padding: '0.75rem 1.5rem',
-                  background: 'linear-gradient(135deg, #d4af37 0%, #aa8c2c 100%)',
-                  color: '#000',
-                  border: 'none',
-                  borderRadius: '6px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                }}
-              >
-                {editingId ? 'Update' : 'Create'} Quiz
-              </button>
-              <button
-                onClick={() => {
-                  setShowForm(false);
-                  setEditingId(null);
-                  setFormData({ title: '', description: '', module: '', difficulty: 'Beginner' });
-                }}
-                style={{
-                  padding: '0.75rem 1.5rem',
-                  background: 'rgba(212, 175, 55, 0.1)',
-                  color: '#d4af37',
-                  border: '1px solid rgba(212, 175, 55, 0.3)',
-                  borderRadius: '6px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                }}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Search */}
-        <div style={{ marginBottom: '2rem', position: 'relative' }}>
-          <Search style={{
-            position: 'absolute',
-            left: '1rem',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            color: '#d4af37',
-          }} />
+        {/* Search Bar */}
+        <div style={{ marginBottom: '2rem' }}>
           <input
             type="text"
             placeholder="Search quizzes..."
@@ -294,12 +142,23 @@ export default function Quizzes() {
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{
               width: '100%',
-              padding: '0.75rem 1rem 0.75rem 2.5rem',
-              background: 'rgba(36, 45, 61, 0.5)',
+              padding: '0.875rem 1rem',
+              background: 'rgba(26, 31, 46, 0.6)',
               border: '1px solid rgba(212, 175, 55, 0.2)',
               borderRadius: '8px',
               color: '#ffffff',
+              fontSize: '1rem',
               fontFamily: "'Inter', sans-serif",
+              outline: 'none',
+              boxSizing: 'border-box',
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = '#d4af37';
+              e.target.style.boxShadow = '0 0 0 3px rgba(212, 175, 55, 0.1)';
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = 'rgba(212, 175, 55, 0.2)';
+              e.target.style.boxShadow = 'none';
             }}
           />
         </div>
@@ -307,151 +166,137 @@ export default function Quizzes() {
         {/* Quizzes Grid */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
-          gap: '2rem',
-          marginBottom: '2rem',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+          gap: '1.5rem',
         }}>
-          {filteredQuizzes.map((quiz) => (
-            <div
-              key={quiz.id}
-              style={{
-                background: 'rgba(26, 31, 46, 0.6)',
-                border: '1px solid rgba(212, 175, 55, 0.1)',
-                borderRadius: '12px',
-                padding: '1.5rem',
-                backdropFilter: 'blur(10px)',
-                transition: 'all 0.3s ease',
-                cursor: 'pointer',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(26, 31, 46, 0.8)';
-                e.currentTarget.style.borderColor = 'rgba(212, 175, 55, 0.3)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(26, 31, 46, 0.6)';
-                e.currentTarget.style.borderColor = 'rgba(212, 175, 55, 0.1)';
-              }}
-            >
-              <div style={{ marginBottom: '1rem' }}>
-                <h3 style={{
-                  fontSize: '1.3rem',
-                  fontFamily: "'Playfair Display', serif",
-                  color: '#d4af37',
-                  margin: '0 0 0.5rem 0',
-                }}>
-                  {quiz.title}
-                </h3>
-                <p style={{
-                  color: '#b8bcc4',
-                  margin: '0.5rem 0',
-                  fontSize: '0.9rem',
-                }}>
-                  {quiz.description}
-                </p>
-              </div>
-
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '1rem',
-                marginBottom: '1rem',
-                paddingBottom: '1rem',
-                borderBottom: '1px solid rgba(212, 175, 55, 0.1)',
-              }}>
-                <div>
-                  <span style={{ color: '#b8bcc4', fontSize: '0.8rem' }}>Module</span>
-                  <p style={{ color: '#ffffff', margin: '0.25rem 0 0 0', fontWeight: 600 }}>
-                    {quiz.module}
-                  </p>
-                </div>
-                <div>
-                  <span style={{ color: '#b8bcc4', fontSize: '0.8rem' }}>Difficulty</span>
-                  <p style={{
-                    color: quiz.difficulty === 'Beginner' ? '#4caf50' : quiz.difficulty === 'Intermediate' ? '#ff9800' : '#f44336',
-                    margin: '0.25rem 0 0 0',
-                    fontWeight: 600,
+          {filteredQuizzes.length > 0 ? (
+            filteredQuizzes.map((quiz) => (
+              <div
+                key={quiz.id}
+                style={{
+                  background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.05) 0%, rgba(255, 140, 66, 0.05) 100%)',
+                  border: '1px solid rgba(212, 175, 55, 0.2)',
+                  borderRadius: '12px',
+                  padding: '1.5rem',
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = '#d4af37';
+                  e.currentTarget.style.boxShadow = '0 8px 32px rgba(212, 175, 55, 0.15)';
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(212, 175, 55, 0.2)';
+                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                <div style={{ marginBottom: '1rem' }}>
+                  <h3 style={{
+                    fontSize: '1.3rem',
+                    fontFamily: "'Playfair Display', serif",
+                    color: '#d4af37',
+                    marginBottom: '0.5rem',
                   }}>
-                    {quiz.difficulty}
+                    {quiz.title}
+                  </h3>
+                  <p style={{
+                    fontSize: '0.9rem',
+                    color: '#b8bcc4',
+                    marginBottom: '0.5rem',
+                  }}>
+                    {getCategoryName(quiz.category)}
                   </p>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    fontSize: '0.85rem',
+                    color: '#b8bcc4',
+                  }}>
+                    <span>{quiz.questions} Questions</span>
+                    <span>{quiz.createdDate}</span>
+                  </div>
                 </div>
-                <div>
-                  <span style={{ color: '#b8bcc4', fontSize: '0.8rem' }}>Questions</span>
-                  <p style={{ color: '#ffffff', margin: '0.25rem 0 0 0', fontWeight: 600 }}>
-                    {quiz.questions}
-                  </p>
-                </div>
-                <div>
-                  <span style={{ color: '#b8bcc4', fontSize: '0.8rem' }}>Pass Rate</span>
-                  <p style={{ color: '#d4af37', margin: '0.25rem 0 0 0', fontWeight: 600 }}>
-                    {quiz.passRate}%
-                  </p>
+
+                <div style={{
+                  display: 'flex',
+                  gap: '0.5rem',
+                  paddingTop: '1rem',
+                  borderTop: '1px solid rgba(212, 175, 55, 0.1)',
+                }}>
+                  <button
+                    style={{
+                      flex: 1,
+                      padding: '0.5rem',
+                      background: 'rgba(52, 152, 219, 0.1)',
+                      border: '1px solid rgba(52, 152, 219, 0.2)',
+                      borderRadius: '6px',
+                      color: '#3498db',
+                      cursor: 'pointer',
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.3rem',
+                    }}
+                  >
+                    <Edit2 size={14} /> Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteQuiz(quiz.id)}
+                    style={{
+                      flex: 1,
+                      padding: '0.5rem',
+                      background: 'rgba(231, 76, 60, 0.1)',
+                      border: '1px solid rgba(231, 76, 60, 0.2)',
+                      borderRadius: '6px',
+                      color: '#e74c3c',
+                      cursor: 'pointer',
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.3rem',
+                    }}
+                  >
+                    <Trash2 size={14} /> Delete
+                  </button>
                 </div>
               </div>
-
-              <div style={{
-                display: 'flex',
-                gap: '0.5rem',
-                justifyContent: 'space-between',
-              }}>
+            ))
+          ) : (
+            <div style={{
+              gridColumn: '1 / -1',
+              textAlign: 'center',
+              padding: '3rem 2rem',
+              color: '#b8bcc4',
+            }}>
+              <p style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>
+                {searchTerm ? 'No quizzes found matching your search' : 'No quizzes created yet'}
+              </p>
+              {!searchTerm && (
                 <button
+                  onClick={() => setShowModal(true)}
                   style={{
-                    flex: 1,
-                    padding: '0.5rem',
+                    padding: '0.75rem 1.5rem',
                     background: 'linear-gradient(135deg, #d4af37 0%, #aa8c2c 100%)',
                     color: '#000',
                     border: 'none',
-                    borderRadius: '6px',
+                    borderRadius: '8px',
+                    fontSize: '1rem',
                     fontWeight: 700,
                     cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.5rem',
-                    fontSize: '0.9rem',
                   }}
                 >
-                  <Play size={16} /> Take Quiz
+                  Create Your First Quiz
                 </button>
-                <button
-                  onClick={() => handleEdit(quiz)}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    background: 'rgba(52, 152, 219, 0.2)',
-                    color: '#3498db',
-                    border: '1px solid rgba(52, 152, 219, 0.3)',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <Edit2 size={16} />
-                </button>
-                <button
-                  onClick={() => handleDelete(quiz.id)}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    background: 'rgba(244, 67, 54, 0.2)',
-                    color: '#f44336',
-                    border: '1px solid rgba(244, 67, 54, 0.3)',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
+              )}
             </div>
-          ))}
+          )}
         </div>
-
-        {filteredQuizzes.length === 0 && (
-          <div style={{
-            textAlign: 'center',
-            color: '#b8bcc4',
-            padding: '3rem',
-          }}>
-            No quizzes found. Create your first quiz to get started!
-          </div>
-        )}
 
         {/* Back Button */}
         <button
@@ -460,16 +305,250 @@ export default function Quizzes() {
             marginTop: '2rem',
             padding: '0.75rem 1.5rem',
             background: 'rgba(212, 175, 55, 0.1)',
-            color: '#d4af37',
-            border: '1px solid rgba(212, 175, 55, 0.3)',
+            border: '1px solid rgba(212, 175, 55, 0.2)',
             borderRadius: '8px',
+            color: '#d4af37',
+            fontSize: '1rem',
+            fontWeight: 600,
             cursor: 'pointer',
-            fontWeight: 700,
           }}
         >
           ← Back to Dashboard
         </button>
       </div>
+
+      {/* Create Quiz Modal */}
+      {showModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '1rem',
+        }}>
+          <div style={{
+            background: 'linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%)',
+            border: '1px solid rgba(212, 175, 55, 0.2)',
+            borderRadius: '16px',
+            padding: '2rem',
+            maxWidth: '500px',
+            width: '100%',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+          }}>
+            {/* Modal Header */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '1.5rem',
+            }}>
+              <h2 style={{
+                fontSize: '1.8rem',
+                fontFamily: "'Playfair Display', serif",
+                color: '#d4af37',
+                margin: 0,
+              }}>
+                Create New Quiz
+              </h2>
+              <button
+                onClick={() => setShowModal(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#b8bcc4',
+                  cursor: 'pointer',
+                  fontSize: '1.5rem',
+                  padding: 0,
+                }}
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handleCreateQuiz}>
+              {/* Quiz Title */}
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  color: '#ffffff',
+                  marginBottom: '0.5rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}>
+                  Quiz Title
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter quiz title"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '0.875rem 1rem',
+                    background: 'rgba(36, 45, 61, 0.8)',
+                    border: '1px solid rgba(212, 175, 55, 0.2)',
+                    borderRadius: '8px',
+                    color: '#ffffff',
+                    fontSize: '1rem',
+                    fontFamily: "'Inter', sans-serif",
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#d4af37';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(212, 175, 55, 0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = 'rgba(212, 175, 55, 0.2)';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                />
+              </div>
+
+              {/* Category Selection */}
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  color: '#ffffff',
+                  marginBottom: '0.5rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}>
+                  Category
+                </label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '0.875rem 1rem',
+                    background: 'rgba(36, 45, 61, 0.8)',
+                    border: '1px solid rgba(212, 175, 55, 0.2)',
+                    borderRadius: '8px',
+                    color: '#ffffff',
+                    fontSize: '1rem',
+                    fontFamily: "'Inter', sans-serif",
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                    cursor: 'pointer',
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#d4af37';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(212, 175, 55, 0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = 'rgba(212, 175, 55, 0.2)';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                >
+                  <option value="">Select a category</option>
+                  {QUIZ_CATEGORIES.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Number of Questions */}
+              <div style={{ marginBottom: '2rem' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  color: '#ffffff',
+                  marginBottom: '0.5rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}>
+                  Number of Questions
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={formData.questions}
+                  onChange={(e) => setFormData({ ...formData, questions: parseInt(e.target.value) })}
+                  style={{
+                    width: '100%',
+                    padding: '0.875rem 1rem',
+                    background: 'rgba(36, 45, 61, 0.8)',
+                    border: '1px solid rgba(212, 175, 55, 0.2)',
+                    borderRadius: '8px',
+                    color: '#ffffff',
+                    fontSize: '1rem',
+                    fontFamily: "'Inter', sans-serif",
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#d4af37';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(212, 175, 55, 0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = 'rgba(212, 175, 55, 0.2)';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                />
+              </div>
+
+              {/* Buttons */}
+              <div style={{
+                display: 'flex',
+                gap: '1rem',
+              }}>
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  style={{
+                    flex: 1,
+                    padding: '0.875rem',
+                    background: 'rgba(212, 175, 55, 0.1)',
+                    border: '1px solid rgba(212, 175, 55, 0.2)',
+                    borderRadius: '8px',
+                    color: '#d4af37',
+                    fontSize: '1rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  style={{
+                    flex: 1,
+                    padding: '0.875rem',
+                    background: 'linear-gradient(135deg, #d4af37 0%, #aa8c2c 100%)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#000',
+                    fontSize: '1rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 15px rgba(212, 175, 55, 0.3)',
+                  }}
+                >
+                  Create Quiz
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
