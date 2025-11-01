@@ -1,6 +1,6 @@
 {
   "buildCommand": "cd client && npm run build",
-  "outputDirectory": "client/dist",
+  "outputDirectory": "./client/dist",
   "framework": "vite",
   "headers": [
     {
@@ -36,5 +36,10 @@
         }
       ]
     }
-  ]
+  ],
+  "env": {
+    "VITE_APP_TITLE": "Ya Lesedi",
+    "VITE_APP_LOGO": "/ya-lesedi-logo.png"
+  }
 }
+
