@@ -126,10 +126,7 @@ export default function Login() {
     setLocation('/dashboard');
   };
 
-  const handleDemoLogin = (demoUsername: string) => {
-    setUsername(demoUsername);
-    setPassword(SECURE_CREDENTIALS[demoUsername as keyof typeof SECURE_CREDENTIALS].password);
-  };
+  // Demo login function removed for security - credentials are now internal only
 
   return (
     <div style={{
@@ -376,83 +373,8 @@ export default function Login() {
           </button>
         </form>
 
-        {/* Demo Credentials */}
-        {!isLocked && (
-          <div style={{
-            borderTop: '1px solid rgba(212, 175, 55, 0.1)',
-            paddingTop: '1.5rem',
-          }}>
-            <p style={{
-              fontSize: '0.8rem',
-              color: '#b8bcc4',
-              textAlign: 'center',
-              marginBottom: '1rem',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}>
-              Demo Credentials
-            </p>
-            <button
-              type="button"
-              onClick={() => handleDemoLogin('admin')}
-              disabled={loading}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                background: 'rgba(212, 175, 55, 0.1)',
-                border: '1px solid rgba(212, 175, 55, 0.2)',
-                borderRadius: '6px',
-                color: '#d4af37',
-                fontSize: '0.9rem',
-                fontWeight: 600,
-                cursor: loading ? 'not-allowed' : 'pointer',
-                marginBottom: '0.5rem',
-                opacity: loading ? 0.6 : 1,
-              }}
-            >
-              👨‍💼 Admin Account
-            </button>
-            <button
-              type="button"
-              onClick={() => handleDemoLogin('manager')}
-              disabled={loading}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                background: 'rgba(212, 175, 55, 0.1)',
-                border: '1px solid rgba(212, 175, 55, 0.2)',
-                borderRadius: '6px',
-                color: '#d4af37',
-                fontSize: '0.9rem',
-                fontWeight: 600,
-                cursor: loading ? 'not-allowed' : 'pointer',
-                marginBottom: '0.5rem',
-                opacity: loading ? 0.6 : 1,
-              }}
-            >
-              🏪 Store Manager
-            </button>
-            <button
-              type="button"
-              onClick={() => handleDemoLogin('staff')}
-              disabled={loading}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                background: 'rgba(212, 175, 55, 0.1)',
-                border: '1px solid rgba(212, 175, 55, 0.2)',
-                borderRadius: '6px',
-                color: '#d4af37',
-                fontSize: '0.9rem',
-                fontWeight: 600,
-                cursor: loading ? 'not-allowed' : 'pointer',
-                opacity: loading ? 0.6 : 1,
-              }}
-            >
-              👤 Staff Account
-            </button>
-          </div>
-        )}
+        {/* Demo Credentials - Hidden for Security */}
+        {/* Credentials are stored securely and not displayed publicly */}
       </div>
 
       {/* Security Notice */}
