@@ -8,10 +8,35 @@ import {
   Clock, 
   CheckCircle,
   AlertTriangle,
-  Calendar
+  Calendar,
+  Trophy,
+  Target,
+  Zap,
+  AlertCircle
 } from 'lucide-react'
+import { useState, useEffect } from 'react'
 
 const DashboardHome = () => {
+  const [motivationalIndex, setMotivationalIndex] = useState(0)
+  const [badges] = useState([
+    { id: 1, name: 'Quick Learner', icon: '⚡', earned: true },
+    { id: 2, name: 'Perfect Score', icon: '🎯', earned: false },
+    { id: 3, name: 'Consistent', icon: '📈', earned: true }
+  ])
+
+  const motivationalMessages = [
+    "🎉 Great progress! Your team is 94% complete with training.",
+    "⭐ Sarah just earned a certificate! Celebrate team wins.",
+    "📈 Completion rate up 5% this week. Keep the momentum!",
+    "🏆 Your restaurant is in the top 10% for training compliance."
+  ]
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMotivationalIndex((prev) => (prev + 1) % motivationalMessages.length)
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [])
   const stats = [
     {
       title: 'Total Employees',
@@ -93,13 +118,15 @@ const DashboardHome = () => {
 
   return (
     <div className="space-y-6">
-      {/* Welcome Section */}
-      <div className="glass-effect rounded-xl p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome back!</h2>
-        <p className="text-gray-600">
-          Here's what's happening with your restaurant training today.
-        </p>
-      </div>
+      {/* Motivational Banner */}
+      <Card className="bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200">
+        <CardContent className="p-6">
+          <p className="text-lg font-semibold text-gray-900">
+            {motivationalMessages[motivationalIndex]}
+          </p>
+        </CardContent>
+      </Card>
+
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -121,8 +148,29 @@ const DashboardHome = () => {
         ))}
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
+      {/* Quick Actions */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Button variant="outline" className="h-24 flex flex-col items-center justify-center space-y-2 border-2 border-gray-200 hover:border-amber-400 hover:bg-amber-50 transition-all">
+          <span className="text-2xl">📋</span>
+          <span className="text-sm font-medium text-gray-700">Assign Training</span>
+        </Button>
+        <Button variant="outline" className="h-24 flex flex-col items-center justify-center space-y-2 border-2 border-gray-200 hover:border-amber-400 hover:bg-amber-50 transition-all">
+          <span className="text-2xl">📊</span>
+          <span className="text-sm font-medium text-gray-700">View Reports</span>
+        </Button>
+        <Button variant="outline" className="h-24 flex flex-col items-center justify-center space-y-2 border-2 border-gray-200 hover:border-amber-400 hover:bg-amber-50 transition-all">
+          <span className="text-2xl">💬</span>
+          <span className="text-sm font-medium text-gray-700">Message Team</span>
+        </Button>
+        <Button variant="outline" className="h-24 flex flex-col items-center justify-center space-y-2 border-2 border-gray-200 hover:border-amber-400 hover:bg-amber-50 transition-all">
+          <span className="text-2xl">❓</span>
+          <span className="text-sm font-medium text-gray-700">Create Quiz</span>
+        </Button>
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-6">
         {/* Recent Activities */}
+        <div className="lg:col-span-2">
         <Card className="luxury-card">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -149,6 +197,57 @@ const DashboardHome = () => {
             </Button>
           </CardContent>
         </Card>
+        </div>
+
+        {/* Gamification & Badges */}
+        <div>
+        <Card className="luxury-card">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Trophy className="h-5 w-5 text-amber-600" />
+              <span>Team Badges & Leaderboard</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <p className="text-sm font-medium text-gray-700 mb-2">Your Achievements</p>
+              <div className="space-y-2">
+                {badges.map((badge) => (
+                  <div
+                    key={badge.id}
+                    className={`p-3 rounded-lg text-center transition-all ${
+                      badge.earned
+                        ? 'bg-amber-50 border-2 border-amber-200'
+                        : 'bg-gray-100 border-2 border-gray-200 opacity-50'
+                    }`}
+                  >
+                    <p className="text-2xl mb-1">{badge.icon}</p>
+                    <p className="text-xs font-semibold text-gray-700">{badge.name}</p>
+                    {!badge.earned && <p className="text-xs text-gray-500 mt-1">Locked</p>}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="pt-4 border-t border-gray-200">
+              <p className="text-sm font-medium text-gray-700 mb-2">Branch Leaderboard</p>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700">🥇 Your Restaurant</span>
+                  <span className="font-semibold text-amber-600">94%</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">🥈 Downtown Branch</span>
+                  <span className="font-semibold text-gray-600">88%</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">🥉 Midtown Branch</span>
+                  <span className="font-semibold text-gray-600">82%</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        </div>
 
         {/* Upcoming Training */}
         <Card className="luxury-card">
@@ -186,23 +285,21 @@ const DashboardHome = () => {
         </Card>
       </div>
 
-      {/* Quick Actions */}
-      <Card className="luxury-card">
+      {/* Engagement Tips */}
+      <Card className="luxury-card bg-blue-50 border-blue-200">
         <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
+          <CardTitle className="flex items-center space-x-2">
+            <Target className="h-5 w-5 text-blue-600" />
+            <span>Engagement Tips for Better Completion</span>
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button className="luxury-button text-white h-12">
-              Add New Employee
-            </Button>
-            <Button variant="outline" className="h-12 border-amber-300 text-amber-700 hover:bg-amber-50">
-              Create Quiz
-            </Button>
-            <Button variant="outline" className="h-12 border-amber-300 text-amber-700 hover:bg-amber-50">
-              Generate Report
-            </Button>
-          </div>
+          <ul className="space-y-2 text-sm text-gray-700">
+            <li>✓ Send personalized messages to staff who are behind on training</li>
+            <li>✓ Celebrate staff wins publicly to boost morale</li>
+            <li>✓ Create friendly competition between branches</li>
+            <li>✓ Schedule training during quieter shifts for better completion</li>
+          </ul>
         </CardContent>
       </Card>
     </div>
